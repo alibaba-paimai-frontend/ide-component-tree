@@ -1,29 +1,36 @@
 import * as React from 'react';
 import ComponentTree from './ComponentTree';
-import { ISchemaObject } from '../model/schema-util';
+import { ISchemaObject, createSchemaModel } from '../model/schema-util';
 
 export interface Props {
   name: string;
   enthusiasmLevel?: number;
 }
-
-let child3: ISchemaObject = { id: '333', name: '333', parent: null };
-let child2: ISchemaObject = {
-  id: '222',
-  name: '222',
-  children: [child3],
-  parent: null
+var base = (id:any) => {
+  return {
+    name: 'Row',
+    id: id,
+    props: {
+      isZebra: true
+    }
+  };
 };
-let child4: ISchemaObject = { id: '444', name: '444', parent: null };
-let treeJSON: ISchemaObject = {
-  id: '111',
-  name: '111',
-  children: [child2, child4],
-  parent: null
+var schema1 = {
+  name: 'Row',
+  id: 'Row_1',
+  props: {
+    isZebra: true
+  },
+  children: [
+    {
+      name: 'Col',
+      id: 'Col_1',
+      children: [base('Row_2'), base('Row_3')]
+    }
+  ]
 };
-child2.parent = treeJSON;
-child3.parent = child2;
-child4.parent = treeJSON;
+const schema = createSchemaModel(schema1);
+const json = (schema as any).toJSON();
 
 function Hello({ name, enthusiasmLevel = 1 }: Props) {
   if (enthusiasmLevel <= 0) {
@@ -35,7 +42,7 @@ function Hello({ name, enthusiasmLevel = 1 }: Props) {
       <div className="greeting">
         Hello {name + getExclamationMarks(enthusiasmLevel)}
       </div>
-      <ComponentTree treeJSON={treeJSON} selectedId={'444'} />
+      <ComponentTree treeJSON={json} selectedId={'444'} />
     </div>
   );
 }

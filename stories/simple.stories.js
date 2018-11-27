@@ -5,9 +5,37 @@ import { wInfo } from '../.storybook/utils';
 import ComponentTree from '../src/components/ComponentTree';
 
 import { text } from '@storybook/addon-knobs';
+import { createSchemaModel } from '../src/model/schema-util';
 import { withReadme } from 'storybook-readme';
 import usageMd from './simple.md';
 import ReadMe from '../README.md';
+var base = id => {
+  return {
+    name: 'Row',
+    id: id,
+    props: {
+      isZebra: true,
+      dataSource: []
+    }
+  };
+};
+var schema1 = {
+  name: 'Row',
+  id: 'Row_1',
+  props: {
+    isZebra: true,
+    dataSource: []
+  },
+  children: [
+    {
+      name: 'Col',
+      id: 'Col_1',
+      children: [base('Row_2'), base('Row_3')]
+    }
+  ]
+};
+const schema = createSchemaModel(schema1);
+
 
 // let child3 = { id: '333', name: '333', parent: null };
 // let child2 = {
@@ -36,6 +64,6 @@ storiesOf('welcome', module)
   .addWithJSX(
     'ComponentTree',
     withReadme(ReadMe, () => (
-      <ComponentTree treeJSON={treeJSON} selectedId={selectedId} />
+      <ComponentTree treeJSON={schema.toJSON()} selectedId={selectedId} />
     ))
   );

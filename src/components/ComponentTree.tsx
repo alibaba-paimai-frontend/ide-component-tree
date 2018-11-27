@@ -70,12 +70,12 @@ export default class ComponentTree extends React.Component<Props, State> {
     const treeNodeIdMap: any = {};
     let count = 0;
     const nodes = traverse(root, (node: ISchemaObject, nodeArray: any = []) => {
-      const { name, id, parent } = node;
+      const { name, id, parentId } = node;
       nodeArray.push({
         id: id,
         name: name,
         component: <TreeNode title={name} key={id} />,
-        parentId: parent && parent.id
+        parentId: parentId
       });
 
       treeNodeIdMap[id] = count; // 倒序索引

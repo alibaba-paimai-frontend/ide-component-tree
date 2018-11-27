@@ -3,6 +3,7 @@
         "outDir": "./dist/",
         "noImplicitAny": true,
         "sourceMap": true,
+        "esModuleInterop": true,
         "module": "ESNext",
         "moduleResolution": "node",
         "target": "es5",
@@ -22,7 +23,7 @@
         ]
     },
     "include": [
-        "./src/**/*"
+        "./src/**/*.ts"
     ],
     "awesomeTypescriptLoaderOptions": {
         "reportFiles": [
