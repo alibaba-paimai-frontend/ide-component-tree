@@ -43,3 +43,7 @@ export function strMapToObj(strMap: Map<string, any>) {
   }
   return obj;
 }
+
+export function sortNumberDesc(a: any, b: any) {
+  return parseFloat(b) - parseFloat(a)
+}

@@ -6,40 +6,34 @@ import {
   Instance
 } from 'mobx-state-tree';
 import { debugModel } from '../lib/debug';
-import { invariant } from '../lib/util';
+import { invariant, sortNumberDesc } from '../lib/util';
 import { extractFunctionNamesFromAttr } from '../lib/repl';
-import { ISchemaObject } from './schema-util';
+import { ISchemaObject, stringifyAttribute, findById } from './schema-util';
 
-import { map, traverse, NodeLikeObject } from 'ss-tree';
+import { map, traverse } from 'ss-tree';
 
-// 子模块类型
-export enum ChildType {
-  NORMAL = 'NORMAL',
-  SPECIAL = 'SPECIAL'
-}
+// // 子模块类型
+// export enum ChildType {
+//   NORMAL = 'NORMAL',
+//   SPECIAL = 'SPECIAL'
+// }
 
 /**
  * 函数模型，借此绑定该组件的多种函数
  */
 const Func = types
   .model('FuncModel', {
-    id: types.optional(types.string, ''),
+    name: types.optional(types.string, ''),
     body: types.optional(types.string, '')
   })
   .views(self => ({
-    definition() {
+    get definition() {
       // 获取函数定义
-      return `window['${self.id}'] = ${self.body}`;
+      return `window['${self.name}'] = ${self.body}`;
     }
   }));
 
 export interface IFunctionModel extends Instance<typeof Func> {}
-
-export interface IFunctionList {
-  names: string[];
-  id: string;
-  model: ISchemaObject;
-}
 
 /**
  * 组件 schema 模型
@@ -53,69 +47,208 @@ export const Schema = types
     functions: types.map(Func), // 在 mst v3 中， `types.map` 默认值就是 `{}`
     children: types.array(types.late((): IAnyModelType => Schema)) // 在 mst v3 中， `types.array` 默认值就是 `[]`
   })
+
+  // 基于 mobx 的 computed 功能，默认会有缓存功能
   .views(self => {
-    // 提高性能，需要用内存缓存函数列表
-    // const functionList = [];
-
-    // traverse(this, (node: NodeLikeObject, lastResult = []) => {});
-
     return {
-      attrsJSON() {
-        return JSON.parse(this.attrs);
+      /**
+       * 获取 JSON 格式的 attrs
+       * 依赖属性：attrs
+       */
+      get attrsJSON() {
+        return JSON.parse(self.attrs);
       },
-      schema() {
-        // 重新塑造出 schema，使用 map 功能（非递归方式）
-        // 第三个参数为 true 的话，不生成 parent 属性；
+
+      /**
+       * 获取直系子类的 id 列表
+       * 依赖属性：children
+       */
+      get childrenIds() {
+        return (self.children || []).map((child: ISchemaModel) => child.id);
+      },
+
+      /**
+       * 获取函数名 map 列表
+       * 依赖属性：attrs
+       */
+      get functionsMap() {
+        return traverse(self, (node: ISchemaObject, fnsMap = new Map()) => {
+          // 抽离出所有的函数名
+          const names = extractFunctionNamesFromAttr((node as any).attrs);
+          // 只保存有回调函数的列表
+          if (names.length) {
+            // 反向索引，根据函数名能够查询获取节点信息
+            names.forEach(name => {
+              fnsMap.set(name, {
+                model: node
+              });
+            });
+          }
+          return fnsMap;
+        });
+      },
+
+      /**
+       * 获取 schema json 格式数据
+       * 依赖属性：attrs
+       */
+      get schemaJSON() {
         return map(
-          this,
-          (node: NodeLikeObject) => {
+          self,
+          (node: ISchemaObject) => {
+            // updateFunctionsMap(node);
             return Object.assign({}, (node as any).attrsJSON, {
-              id: (node as any).id
+              id: node.id,
+              name: node.name
             });
           },
           true
         );
       },
-      /**
-       * 获取当前模块下所有的函数注册表
-       */
-      functionList() {
-        return traverse(
-          self,
-          (node: ISchemaObject, list: IFunctionList[] = []) => {
-            let names = extractFunctionNamesFromAttr((node as any).attrs);
 
-            // 只保存有回调函数的列表
-            if (names.length) {
-              list.push({
-                id: (node as ISchemaObject).id,
-                model: node,
-                names
-              });
-            }
-            return list;
-          }
-        );
+      /**
+       * 生成函数模板，在输出到函数面板上的时候有用到
+       * 依赖属性：functions
+       */
+      get functionDefinitions(): string {
+        // 树的非递归遍历
+        return traverse(self, (node: ISchemaModel, str: string = '') => {
+          Array.from(node.functions.values()).map(value => {
+            str += value.definition + '\n';
+          });
+
+          return str;
+        });
       }
     };
   })
-  // 用于缓存各种中间属性
-  .volatile(self => ({
-    functionList: new Map()
-  }))
+  .views(self => {
+    return {
+      /**
+       * 根据 id 返回后代节点（不一定是直系子节点）
+       */
+      findNode(id: string) {
+        return findById(self as any, id);
+      },
+
+      /**
+       * 根据 id 定位到直系子节点的索引值；
+       * 即，返回子节点中指定 id 对应的节点位置
+       */
+      indexOfChildren(id: string) {
+        if (!id) {
+          return -1;
+        }
+        let ids = (this.children || []).map((child: ISchemaModel) => child.id);
+        return ids.indexOf(id);
+      }
+    };
+  })
   .actions(self => {
     return {
-      setParent(model: any) {
+      /**
+       * 更新 parentId 属性
+       * 影响属性：parentId
+       */
+      setParentId(model: any) {
         invariant(model && model.id, `${model} 节点不能为空，且必须要有 id`);
         self.parentId = model.id;
       },
+      /**
+       * 更新 children 属性
+       * 影响属性：当前节点的 children 属性、children 的 parentId 属性
+       */
       setChildren(children: any) {
         // 设置子节点的时候需要绑定父节点
         // this.children = children || [];
         children.forEach((child: any) => {
-          child.setParent(self); // 绑定父节点
+          child.setParentId(self); // 绑定父节点
         });
         self.children = children || [];
+      },
+
+      /**
+       * 更新 id 属性
+       * 影响属性：id
+       */
+      setId(id: string) {
+        invariant(!!id, '将要更改的 id 为空');
+        self.id = id;
+      },
+
+      /**
+       * 更新 attrs 属性
+       * 影响属性：attrs
+       */
+      setAttrs(attrOrObject: string | object) {
+        let attrObject = attrOrObject;
+        // 如果
+        if (typeof attrOrObject === 'string') {
+          attrObject = JSON.parse(attrOrObject);
+        }
+
+        self.attrs = stringifyAttribute(attrObject as ISchemaObject);
+      },
+      /**
+       * 更新 functions 属性
+       * 影响属性：functions
+       */
+      setFunction(name: string, body = '') {
+        invariant(!!name, '设置 function 时缺少 name 属性');
+        self.functions.set(
+          name,
+          Func.create({
+            name,
+            body
+          })
+        );
+      }
+    };
+  })
+  .actions(self => {
+    return {
+      /**
+       * 新增直系节点
+       * 影响属性：children
+       */
+      addChildren: (nodeOrNodeArray: ISchemaModel | ISchemaModel[]) => {
+        const nodes = [].concat(nodeOrNodeArray);
+        nodes.forEach(node => {
+          node.setParentId(self);
+          self.children.push(node);
+        });
+      },
+      /**
+       * 根据 id 删除直系节点，如果想要整个重置 children，请使用 `setChildren` 方法
+       * 影响属性：children
+       */
+      removeChildren: (idOrIdArray: string | string[]) => {
+        const ids = [].concat(idOrIdArray);
+        debugModel(
+          `[comp] 删除前 children 长度: ${
+            self.children.length
+          }, 待删除的 ids: ${ids.join('、')}`
+        );
+
+        const originIds = [].concat(self.childrenIds);
+
+        const targetIndexes = ids.map(id => {
+          return originIds.indexOf(id);
+        });
+
+        // 降序排列
+        targetIndexes.sort(sortNumberDesc);
+
+        // 逆序删除子元素
+        targetIndexes.forEach(index => {
+          if(index !== -1) {
+            let nodeToBeRemoved = self.children[index];
+            destroy(nodeToBeRemoved);
+          }
+        });
+
+        debugModel(`[comp] 删除后 children 长度: ${self.children.length}，ids: ${self.children.map(o => o.id).join('、')}`);
+
       }
     };
   });
