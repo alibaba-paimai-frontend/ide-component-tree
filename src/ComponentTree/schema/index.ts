@@ -2,13 +2,12 @@ import {
   types,
   destroy,
   IAnyModelType,
-  _NotCustomized,
   Instance
 } from 'mobx-state-tree';
-import { debugModel } from '../lib/debug';
-import { invariant, sortNumberDesc } from '../lib/util';
-import { extractFunctionNamesFromAttr } from '../lib/repl';
-import { ISchemaObject, stringifyAttribute, findById } from './schema-util';
+import { debugModel } from '../../lib/debug';
+import { invariant, sortNumberDesc } from '../../lib/util';
+import { extractFunctionNamesFromAttr } from '../../lib/repl';
+import { ISchemaObject, stringifyAttribute, findById } from './util';
 
 import { map, traverse } from 'ss-tree';
 
@@ -40,7 +39,8 @@ export interface IFunctionModel extends Instance<typeof Func> {}
  */
 export const Schema = types
   .model('SchemaModel', {
-    id: types.optional(types.string, ''),
+    id: types.optional(types.string, ''), // 创建之后固定，不能再更改
+    screenId: types.optional(types.string, ''), // 这个是显示在页面上的 id，是可以被更改的，该 id 是用在回调函数等地方
     name: types.optional(types.string, ''),
     attrs: types.optional(types.string, '{}'), // 保存属性字符串,
     parentId: types.optional(types.string, ''), // 保存父节点
@@ -99,6 +99,7 @@ export const Schema = types
             // updateFunctionsMap(node);
             return Object.assign({}, (node as any).attrsJSON, {
               id: node.id,
+              screenId: node.screenId,
               name: node.name
             });
           },
@@ -177,6 +178,24 @@ export const Schema = types
       },
 
       /**
+       * 更新 screenId 属性
+       * 影响属性：screenId
+       */
+      setScreenId(id: string) {
+        invariant(!!id, '将要更改的 screen id 为空');
+        self.screenId = id;
+      },
+
+      /**
+       * 更新 name 属性
+       * 影响属性：name
+       */
+      setName(name: string) {
+        invariant(!!name, '将要更改的 name 为空');
+        self.name = name;
+      },
+
+      /**
        * 更新 attrs 属性
        * 影响属性：attrs
        */
@@ -241,14 +260,17 @@ export const Schema = types
 
         // 逆序删除子元素
         targetIndexes.forEach(index => {
-          if(index !== -1) {
+          if (index !== -1) {
             let nodeToBeRemoved = self.children[index];
             destroy(nodeToBeRemoved);
           }
         });
 
-        debugModel(`[comp] 删除后 children 长度: ${self.children.length}，ids: ${self.children.map(o => o.id).join('、')}`);
-
+        debugModel(
+          `[comp] 删除后 children 长度: ${
+            self.children.length
+          }，ids: ${self.children.map(o => o.id).join('、')}`
+        );
       }
     };
   });

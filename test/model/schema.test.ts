@@ -51,7 +51,7 @@ describe('[Schema] schema 模型  - 创建模型', () => {
     expect(schema.name).toBe('');
     expect(schema.attrs).toBe('{}');
     expect(schema.parentId).toBe('');
-    expect(strMapToObj(schema.functions)).toEqual({});
+    expect(strMapToObj(schema.functions as any)).toEqual({});
     expect(schema.children).toEqual([]);
   });
 });

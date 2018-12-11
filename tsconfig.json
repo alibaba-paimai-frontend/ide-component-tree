@@ -9,6 +9,7 @@
         "target": "es5",
         "jsx": "react",
         "downlevelIteration": true,
+        "experimentalDecorators": true,
         "allowJs": true,
         "rootDirs": [
             "src",

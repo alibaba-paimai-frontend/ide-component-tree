@@ -1,10 +1,11 @@
-import { invariant } from '../lib/util';
+import { invariant } from '../../lib/util';
 import {
   ISchemaObject,
   genCompIdByName,
   createSchemaModel
-} from '../model/schema-util';
-import { ISchemaModel } from '../model/schema';
+} from '../schema/util';
+import { ISchemaModel } from '../schema/index';
+
 
 declare const GOURD_WIDGET: {
   list: any;
@@ -52,7 +53,8 @@ export function getSchemaByName(name: string): ISchemaObject {
   invariant(!!name, 'schema 对象的 name 不能为空');
   let schema: ISchemaObject = {
     name: name,
-    id: genCompIdByName(name)
+    id: genCompIdByName(name),
+    screenId: genCompIdByName(name)
   };
 
   // 如果有默认属性，新增上去

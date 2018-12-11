@@ -1,11 +1,13 @@
-import { Schema, ISchemaModel } from './schema';
-import { invariant, uuid } from '../lib/util';
+import { Schema, ISchemaModel } from '.';
+import { invariant, uuid } from '../../lib/util';
 import { map, traverse, NodeLikeObject, TRAVERSE_TYPE } from 'ss-tree';
 
 // 和属性编辑器直接互相传递的 schema object 接口
 export interface ISchemaObject extends NodeLikeObject {
-  id: string; // id
+  id: string; // 可以变更的 id
   name: string; // 组件名，比如 'Row'、'Col',
+  screenId: string; // 不可变更的 id,
+  parentId?: string; // 父组件 id,
   props?: object; // 组件初始化的 props 对象
   children?: ISchemaObject[]; // 子节点对象
   functions?: string; // 函数字符串
@@ -16,7 +18,8 @@ export interface ISchemaObject extends NodeLikeObject {
 export const EMPTY_COMP_ID = '-1';
 export const EMPTY_COMP: ISchemaObject = {
   name: '[init comp]',
-  id: EMPTY_COMP_ID
+  id: EMPTY_COMP_ID,
+  screenId: EMPTY_COMP_ID
 };
 
 // 根节点标志
@@ -30,7 +33,8 @@ export enum SPECIAL_ATTRIBUTE_NAME {
   CHILDREN = 'children', // children 属性
   ID = 'id', // id 属性,
   NAME = 'name', // name 属性
-  PARENTID = 'parentId' // parentId 属性
+  PARENTID = 'parentId', // parentId 属性
+  SCREENID = 'screenId' // screenId 属性
 }
 export const SPECIAL_NAMES = Object.values(SPECIAL_ATTRIBUTE_NAME);
 
@@ -44,11 +48,13 @@ export const SPECIAL_NAMES = Object.values(SPECIAL_ATTRIBUTE_NAME);
  */
 export function genCompIdByName(
   name: string = 'unknown',
-  isMasterApp: boolean = false
+  isMasterApp: boolean = false,
+  isUUID: boolean = false
 ) {
   let uid = uuid();
   let prefix = isMasterApp ? 'master_' : '';
-  return `\$${prefix}${name}_${uid}`;
+  let ssPrefix = isUUID ? 'uu_' : '';
+  return `\$${ssPrefix}${prefix}${name}_${uid}`;
 }
 
 // 忽略 children 的值，该属性做特殊处理
@@ -100,6 +106,9 @@ export function createSchemaModel(schema: any): ISchemaModel {
       const newSchema = Schema.create({
         id:
           (<ISchemaObject>node).id ||
+          genCompIdByName((<ISchemaObject>node).name, false, true),
+        screenId:
+          (<ISchemaObject>node).screenId ||
           genCompIdByName((<ISchemaObject>node).name),
         name: (<ISchemaObject>node).name, // 组件名
         attrs: stringifyAttribute(<ISchemaObject>node)
@@ -135,6 +144,7 @@ export function getAllIds(model: ISchemaModel | ISchemaObject): string[] {
     model as ISchemaObject,
     (node: any, lastResult: string[] = []) => {
       lastResult.push(node.id);
+      return lastResult;
     }
   );
 }

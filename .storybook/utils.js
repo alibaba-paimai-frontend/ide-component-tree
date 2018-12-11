@@ -1,7 +1,7 @@
 
-import wInfoStyle from "./styles.json";
+// import wInfoStyle from "./styles.json";
 export function wInfo(md) {
     return {
-        info: { inline: true, source: false, header: true, styles: wInfoStyle, text: md }
+        info: { inline: true, source: false, header: true, text: md }
     };
 }

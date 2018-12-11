@@ -1,4 +1,8 @@
-import { createSchemaModel } from '../../src/model/schema-util';
+import {
+  createSchemaModel,
+  createEmptyModel,
+  getAllIds
+} from '../../src/model/schema-util';
 import { strMapToObj } from '../../src/lib/util';
 describe('[SchemaUtil] createSchemaModel - 根据 json 创建 schema ', () => {
   test('单层级创建，自动创建 id', () => {
@@ -9,7 +13,7 @@ describe('[SchemaUtil] createSchemaModel - 根据 json 创建 schema ', () => {
     expect(schema.name).toBe('root');
     expect(schema.attrs).toBe('{}');
     expect(schema.parentId).toBe('');
-    expect(strMapToObj(schema.functions)).toEqual({});
+    expect(strMapToObj(schema.functions as any)).toEqual({});
     expect(schema.children).toEqual([]);
   });
 
@@ -25,7 +29,7 @@ describe('[SchemaUtil] createSchemaModel - 根据 json 创建 schema ', () => {
     expect(schema.name).toBe('root');
     expect(schema.attrs).toBe('{"props":{"label":"文案"}}');
     expect(schema.parentId).toBe('');
-    expect(strMapToObj(schema.functions)).toEqual({});
+    expect(strMapToObj(schema.functions as any)).toEqual({});
     expect(schema.children).toEqual([]);
   });
 
@@ -48,7 +52,7 @@ describe('[SchemaUtil] createSchemaModel - 根据 json 创建 schema ', () => {
     expect(schema.name).toBe('root');
     expect(schema.attrs).toBe('{"props":{"label":"文案1"}}');
     expect(schema.parentId).toBe('');
-    expect(strMapToObj(schema.functions)).toEqual({});
+    expect(strMapToObj(schema.functions as any)).toEqual({});
 
     const child = schema.children[0];
     expect(child.id).toBe('son');
@@ -72,5 +76,12 @@ describe('[SchemaUtil] createSchemaModel - 边界情况测试', () => {
       const obj: any = {};
       createSchemaModel(obj);
     }).toThrowError('缺少 `name` 属性');
+  });
+});
+
+describe('[SchemaUtil] getAllIds - 获取 schema 中所有的 id', () => {
+  test('空模型返回 -1', () => {
+    const schema = createEmptyModel();
+    expect(getAllIds(schema)).toEqual(['-1']);
   });
 });

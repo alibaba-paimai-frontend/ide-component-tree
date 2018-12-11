@@ -1,0 +1,21 @@
+import { stores } from '../stores';
+import { createSchemaModel, getAllIds } from '../schema/util';
+import Router from 'ette-router';
+
+export const router = new Router();
+
+// 获取所有的节点
+(router as any).post('nodes', '/nodes', function(ctx: any) {
+  const { schema } = ctx.request.data;
+
+  // const newSchema = createSchemaModel(schema);
+  stores.setSchema(createSchemaModel(schema));
+  console.log('777', getAllIds(schema));
+  stores.setExpandedIds(getAllIds(schema));
+  // stores.schema.setName(newSchema.name);
+  // stores.schema.setId(newSchema.id);
+  // stores.schema.setChildren(newSchema.children);
+  // stores.setSchema(stores.schema);
+
+  ctx.response.status = 200;
+});
