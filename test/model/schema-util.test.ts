@@ -1,8 +1,9 @@
 import {
   createSchemaModel,
   createEmptyModel,
-  getAllIds
-} from '../../src/model/schema-util';
+  getAllNodes
+  // getAllIds
+} from '../../src/ComponentTree/schema/util';
 import { strMapToObj } from '../../src/lib/util';
 describe('[SchemaUtil] createSchemaModel - 根据 json 创建 schema ', () => {
   test('单层级创建，自动创建 id', () => {
@@ -79,9 +80,23 @@ describe('[SchemaUtil] createSchemaModel - 边界情况测试', () => {
   });
 });
 
-describe('[SchemaUtil] getAllIds - 获取 schema 中所有的 id', () => {
-  test('空模型返回 -1', () => {
+describe('[SchemaUtil] getAllNodes - 获取 schema 中指定属性', () => {
+  test('空模型返回 -1 节点的信息', () => {
     const schema = createEmptyModel();
-    expect(getAllIds(schema)).toEqual(['-1']);
+    expect(getAllNodes(schema).map((o: any)=>o.toJSON())).toEqual([
+      {
+        attrs: '{}',
+        children: [],
+        functions: {},
+        id: '-1',
+        name: '[init comp]',
+        parentId: '',
+        screenId: '-1'
+      }
+    ]);
+  });
+  test('空模型返回 -1，指定 id 后将只返回 id 属性', () => {
+    const schema = createEmptyModel();
+    expect(getAllNodes(schema, 'id')).toEqual([{ id: '-1' }]);
   });
 });

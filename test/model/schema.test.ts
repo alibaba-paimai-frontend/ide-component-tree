@@ -1,5 +1,5 @@
-import { Schema, ISchemaModel } from '../../src/model/schema';
-import { createSchemaModel } from '../../src/model/schema-util';
+import { Schema, ISchemaModel } from '../../src/ComponentTree/schema/';
+import { createSchemaModel } from '../../src/ComponentTree/schema/util';
 import { strMapToObj } from '../../src/lib/util';
 import Chance from 'chance';
 const chance = new Chance();
@@ -7,6 +7,7 @@ const chance = new Chance();
 const schemaData = {
   id: 'father',
   name: 'root',
+  screenId: '$root_1',
   props: { label: '文案1' },
   functions: {
     __$father_onChange: function() {}
@@ -19,6 +20,7 @@ const schemaData = {
     {
       id: 'son',
       name: 'first',
+      screenId: '$first_1',
       props: { label: '文案2' },
       functions: {
         __$son_onClick: function() {}
@@ -31,6 +33,7 @@ const schemaData = {
         {
           id: 'grandson',
           name: 'second',
+          screenId: '$second_1',
           functions: {
             __$grandson_onClick: function() {}
           },
@@ -70,6 +73,7 @@ describe('[Schema] 属性 - functionsMap 属性', () => {
   test('更改之后，再次获取新的属性', () => {
     const schema = createSchemaModel({
       id: 'father',
+      screenId: '$root_1',
       name: 'root',
       props: { label: '文案1' },
       events: {
@@ -79,6 +83,7 @@ describe('[Schema] 属性 - functionsMap 属性', () => {
         {
           id: 'son',
           name: 'first',
+          screenId: '$first_1',
           props: { label: '文案2' },
           events: {
             onChange: '__$son_onClick'
@@ -108,6 +113,7 @@ describe('[Schema] 属性 - schemaJSON 属性', () => {
     expect(schema.schemaJSON).toEqual({
       id: 'father',
       name: 'root',
+      screenId: '$root_1',
       props: { label: '文案1' },
       events: {
         onChange: '__$father_onChange'
@@ -116,6 +122,7 @@ describe('[Schema] 属性 - schemaJSON 属性', () => {
         {
           id: 'son',
           name: 'first',
+          screenId: '$first_1',
           props: { label: '文案2' },
           events: {
             onChange: '__$son_onClick'
@@ -124,6 +131,7 @@ describe('[Schema] 属性 - schemaJSON 属性', () => {
             {
               id: 'grandson',
               name: 'second',
+              screenId: '$second_1',
               props: { label: '文案3' },
               events: {
                 onChange: '__$grandson_onClick'
@@ -142,6 +150,7 @@ describe('[Schema] 属性 - functionDefinitions 属性', () => {
     const schema = createSchemaModel({
       id: 'father',
       name: 'root',
+      screenId: '$root_1',
       props: { label: '文案1' },
       events: {
         onChange: '__$father_onChange'
@@ -168,6 +177,7 @@ describe('[Schema] 方法 - findNode 方法', () => {
   expect(node.schemaJSON).toEqual({
     id: 'grandson',
     name: 'second',
+    screenId: '$second_1',
     props: { label: '文案3' },
     events: {
       onChange: '__$grandson_onClick'

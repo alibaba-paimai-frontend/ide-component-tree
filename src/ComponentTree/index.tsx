@@ -155,7 +155,6 @@ export class ComponentTree extends Component<TreeProps, TreeState> {
   render() {
     const { schema, selectedId, expandedIds = [], onExpand } = this.props;
     const keys = expandedIds.slice();
-    console.log(111, keys);
 
     return (
       <Tree

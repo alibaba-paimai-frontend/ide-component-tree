@@ -47,3 +47,13 @@ export function strMapToObj(strMap: Map<string, any>) {
 export function sortNumberDesc(a: any, b: any) {
   return parseFloat(b) - parseFloat(a)
 }
+
+export function pick(object: any, paths: string[]) {
+  const obj: any = {};
+  for (const path of paths) {
+    if (object[path]) {
+      obj[path] = object[path]
+    }
+  }
+  return obj;
+} 

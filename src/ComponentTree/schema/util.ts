@@ -1,5 +1,5 @@
 import { Schema, ISchemaModel } from '.';
-import { invariant, uuid } from '../../lib/util';
+import { invariant, uuid, pick } from '../../lib/util';
 import { map, traverse, NodeLikeObject, TRAVERSE_TYPE } from 'ss-tree';
 
 // 和属性编辑器直接互相传递的 schema object 接口
@@ -132,18 +132,23 @@ export function createEmptyModel() {
   return createSchemaModel(EMPTY_COMP);
 }
 
+type SchemaOrModel = ISchemaModel | ISchemaObject;
 /**
- * 从当前的 schema 中提取出所有的 ids
+ * 从当前的 schema 中提取出所有的节点；按广度遍历
  *
  * @export
- * @param {ISchemaModel | ISchemaObject} schema - 要提取 ids 的 schema/model 引用值
- * @returns {string[]}
+ * @param {SchemaOrModel} schema - 要提取 ids 的 schema/model 引用值
+ * @returns {SchemaOrModel[]}
  */
-export function getAllIds(model: ISchemaModel | ISchemaObject): string[] {
+export function getAllNodes(
+  model: SchemaOrModel,
+  filterArray?: string | string[]
+) {
+  const filters = [].concat(filterArray || []); // 使用逗号隔开
   return traverse(
     model as ISchemaObject,
-    (node: any, lastResult: string[] = []) => {
-      lastResult.push(node.id);
+    (node: any, lastResult: SchemaOrModel[] = []) => {
+      lastResult.push(filters.length ? pick(node, filters) : node);
       return lastResult;
     }
   );
@@ -159,17 +164,19 @@ export function getAllIds(model: ISchemaModel | ISchemaObject): string[] {
  */
 export function findById(
   model: ISchemaModel | ISchemaObject,
-  id: string
+  id: string,
+  filterArray?: string | string[]
 ): ISchemaModel | ISchemaObject | null {
   if (!id) return null;
 
   let modelNode = null;
+  const filters = [].concat(filterArray ||[]); // 使用逗号隔开
 
   traverse(
     model as ISchemaObject,
     (node: any) => {
       if (node.id === id) {
-        modelNode = node;
+        modelNode = filters.length ? pick(node, filters) : node;
         return true;
       }
       return false;

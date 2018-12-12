@@ -1,5 +1,5 @@
 import { stores } from '../stores';
-import { createSchemaModel, getAllIds } from '../schema/util';
+import { createSchemaModel, getAllNodes } from '../schema/util';
 import Router from 'ette-router';
 
 export const router = new Router();
@@ -10,8 +10,10 @@ export const router = new Router();
 
   // const newSchema = createSchemaModel(schema);
   stores.setSchema(createSchemaModel(schema));
-  console.log('777', getAllIds(schema));
-  stores.setExpandedIds(getAllIds(schema));
+  // console.log('777', getAllNodes(schema, 'id'));
+  const nodes = getAllNodes(schema, 'id');
+  const ids = nodes.map((o: any) => o.id);
+  stores.setExpandedIds(ids);
   // stores.schema.setName(newSchema.name);
   // stores.schema.setId(newSchema.id);
   // stores.schema.setChildren(newSchema.children);
