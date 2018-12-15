@@ -1,10 +1,18 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
+import { Row, Col, Input, Button } from 'antd';
 import { wInfo } from '../../../.storybook/utils';
 import mdGetNode from './getNode.md';
 
 import { ComponentTreeWithStore, client } from '../../../src/';
 import { treegen } from '../../helper';
+
+const styles = {
+  demoWrap: {
+    display: 'flex',
+    width: '100%'
+  }
+};
 
 let nodes = [];
 
@@ -35,34 +43,48 @@ function getById() {
     if (status === 200) {
       const node = body.node || {};
       document.getElementById('info').innerText = JSON.stringify(
-        node.toJSON ? node.toJSON(): node,
+        node.toJSON ? node.toJSON() : node,
         null,
         4
       );
     }
   });
+
+  // 同时选中那个节点
+  client.put(`/selection/${id}`);
 }
 storiesOf('API - get', module)
   .addParameters(wInfo(mdGetNode))
   .addWithJSX('节点：/nodes 获取所有节点', () => {
     return (
-      <div>
-        <div id="info" />
-        <button onClick={getNodeInfo}>获取所有节点信息（id,attrs)</button>
-        <button onClick={createNew}>创建随机树</button>
-        <button onClick={updateName}>更新根节点名字</button>
-        <ComponentTreeWithStore />
-      </div>
+      <Row style={styles.demoWrap}>
+        <Col span={10} offset={2}>
+          <Button onClick={getNodeInfo}>获取所有节点信息（id,attrs)</Button>
+          <Button onClick={createNew}>创建随机树</Button>
+          <Button onClick={updateName}>更新根节点名字</Button>
+          <ComponentTreeWithStore />
+        </Col>
+        <Col span={12}>
+          <div id="info" />
+        </Col>
+      </Row>
     );
   })
   .addWithJSX('节点：/nodes/:id 获取指定节点信息', () => {
     return (
-      <div>
-        <div id="info" />
-        <input id="nodeId" />
-        <button onClick={createNew}>创建随机树</button>
-        <button onClick={getById}>获取指定节点信息</button>
-        <ComponentTreeWithStore />
-      </div>
+      <Row style={styles.demoWrap}>
+        <Col span={10} offset={2}>
+          <Input placeholder="输入节点 ID" id="nodeId" addonAfter={
+            <>
+              <Button onClick={createNew}>创建随机树</Button>
+              <Button onClick={getById}>获取指定节点信息</Button>
+            </>
+          } />
+          <ComponentTreeWithStore />
+        </Col>
+        <Col span={12}>
+          <div id="info" />
+        </Col>
+      </Row>
     );
   });

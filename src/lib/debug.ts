@@ -10,7 +10,7 @@ var debugBase = (type:string, ...notes:string[]) => (...props: string[]) => {
     });
 
     props[0] = str + props[0];
-    Debug(`ide:${type}`)(...props);
+    Debug(`component-tree:${type}`)(...props);
 }
 
 var debugMini = debugBase('mini', '普通'); // 普通的日志

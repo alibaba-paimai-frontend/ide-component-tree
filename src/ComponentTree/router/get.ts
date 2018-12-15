@@ -1,5 +1,5 @@
 import { stores } from '../stores';
-import { getAllNodes, findById } from '../schema/util';
+import { findById } from '../schema/util';
 import Router from 'ette-router';
 
 export const router = new Router();
@@ -10,7 +10,7 @@ export const router = new Router();
   const { query } = ctx.request;
   const filterArray = query && query.filter && query.filter.trim().split(',');
   ctx.response.body = {
-    nodes: getAllNodes(stores.schema, filterArray)
+    nodes: stores.schema.allNodesWithFilter(filterArray)
   };
   ctx.response.status = 200;
 });

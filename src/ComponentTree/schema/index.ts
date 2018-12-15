@@ -1,13 +1,13 @@
-import {
-  types,
-  destroy,
-  IAnyModelType,
-  Instance
-} from 'mobx-state-tree';
+import { types, destroy, IAnyModelType, Instance } from 'mobx-state-tree';
 import { debugModel } from '../../lib/debug';
-import { invariant, sortNumberDesc } from '../../lib/util';
+import { invariant, sortNumberDesc, pick } from '../../lib/util';
 import { extractFunctionNamesFromAttr } from '../../lib/repl';
-import { ISchemaObject, stringifyAttribute, findById } from './util';
+import {
+  ISchemaObject,
+  stringifyAttribute,
+  findById,
+  getAllNodes
+} from './util';
 
 import { map, traverse } from 'ss-tree';
 
@@ -120,18 +120,25 @@ export const Schema = types
 
           return str;
         });
+      },
+
+      /**
+       * 返回包含所有节点的列表集合
+       * 依赖属性：所有
+       */
+      get allNodes() {
+        return getAllNodes(self as ISchemaModel);
       }
     };
   })
   .views(self => {
     return {
       /**
-       * 根据 id 返回后代节点（不一定是直系子节点）
+       * 根据 id 返回后代节点（不一定是直系子节点），如果有过滤条件，则返回符合过滤条件的节点
        */
-      findNode(id: string) {
-        return findById(self as any, id);
+      findNode(id: string, filterArray?: string | string[]) {
+        return findById(self as any, id, filterArray);
       },
-
       /**
        * 根据 id 定位到直系子节点的索引值；
        * 即，返回子节点中指定 id 对应的节点位置
@@ -142,6 +149,16 @@ export const Schema = types
         }
         let ids = (this.children || []).map((child: ISchemaModel) => child.id);
         return ids.indexOf(id);
+      },
+
+      /**
+       * 只返回所有的节点的属性子集合，其实该方法和 util 中的 `allNodesWithFilter` 有异曲同工之处
+       * 依赖：allNodes
+       */
+      allNodesWithFilter(filterArray?: string | string[]) {
+        if (!filterArray) return self.allNodes;
+        const filters = [].concat(filterArray || []);
+        return self.allNodes.map((node: any) => pick(node, filters));
       }
     };
   })
