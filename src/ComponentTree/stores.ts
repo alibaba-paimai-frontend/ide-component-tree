@@ -52,6 +52,16 @@ export const Stores = types
           `[自动展开节点] expandedIds: ${expandedIds}, shouldExpand: ${shouldExpand}`
         );
         self.setExpandedIds(expandedIds.concat(shouldExpand));
+      },
+
+      /**
+      * 重置 schema，相当于创建空树
+      * 影响范围：整棵树
+      */
+      resetToEmpty(){
+        const nodeToRemoved = (self.schema as any).toJSON();
+        self.setSchema(createEmptyModel());
+        return nodeToRemoved;
       }
     };
   });

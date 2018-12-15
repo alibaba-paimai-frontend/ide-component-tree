@@ -6,7 +6,8 @@ import {
   ISchemaObject,
   stringifyAttribute,
   findById,
-  getAllNodes
+  getAllNodes,
+  updateNode
 } from './util';
 
 import { map, traverse } from 'ss-tree';
@@ -208,7 +209,7 @@ export const Schema = types
        * 影响属性：name
        */
       setName(name: string) {
-        invariant(!!name, '将要更改的 name 为空');
+        invariant(!!name, '不能将 name 更改为空值');
         self.name = name;
       },
 
@@ -241,6 +242,56 @@ export const Schema = types
       }
     };
   })
+  // update 操作
+  .actions(self => {
+    return {
+      /**
+       * 更新当前节点的属性
+       * 影响属性：attrName 对应的属性
+       */
+      updateAttribute: (attrName: string, value: string | object): boolean => {
+        return updateNode(self as ISchemaModel, attrName, value);
+      },
+
+      /**
+       * 更新当前节点下的后代节点属性
+       * 影响属性：后代节点中 attrName 对应的属性
+       */
+      updateAttributeById: (
+        id: string,
+        attrName: string,
+        value: string | object
+      ): boolean => {
+        if (!id) return false;
+        // 首先找到节点
+        const node = self.findNode(id);
+
+        if (!!node) {
+          // 首先找到节点
+          return updateNode(node as ISchemaModel, attrName, value);
+        }
+        return false;
+      }
+    };
+  })
+  // 删除操作
+  .actions(self => {
+    return {
+      removeNode: (id: string): false | ISchemaObject => {
+        if (!id) return false;
+
+        const node = self.findNode(id); // 找到指定的节点
+        if (node) {
+          const nodeTobeRemove = (node as any).toJSON();
+          destroy(node as ISchemaModel); // 从 mst 中移除节点
+          return nodeTobeRemove;
+        }
+
+        return false;
+      }
+    };
+  })
+  // 子节点相关
   .actions(self => {
     return {
       /**

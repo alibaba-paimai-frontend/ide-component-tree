@@ -32,10 +32,6 @@ function createNew() {
   client.post('/nodes', { schema: schema });
 }
 
-function updateName() {
-  client.put('/nodes/root', { name: 'good' });
-}
-
 function getById() {
   const id = document.getElementById('nodeId').value;
   client.get(`/nodes/${id}`).then(res => {
@@ -61,7 +57,7 @@ storiesOf('API - get', module)
         <Col span={10} offset={2}>
           <Button onClick={getNodeInfo}>获取所有节点信息（id,attrs)</Button>
           <Button onClick={createNew}>创建随机树</Button>
-          <Button onClick={updateName}>更新根节点名字</Button>
+          
           <ComponentTreeWithStore />
         </Col>
         <Col span={12}>
@@ -76,8 +72,8 @@ storiesOf('API - get', module)
         <Col span={10} offset={2}>
           <Input placeholder="输入节点 ID" id="nodeId" addonAfter={
             <>
+              <Button onClick={getById}>获取节点信息</Button>
               <Button onClick={createNew}>创建随机树</Button>
-              <Button onClick={getById}>获取指定节点信息</Button>
             </>
           } />
           <ComponentTreeWithStore />

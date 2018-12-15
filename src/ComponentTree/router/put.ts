@@ -3,12 +3,26 @@ import Router from 'ette-router';
 
 export const router = new Router();
 
-// 更新节点的属性
+// 更新根节点的属性
 (router as any).put('nodes', '/nodes/root', function(ctx: any) {
-  const { name } = ctx.request.data;
+  const { name, value } = ctx.request.data;
+  const isSuccess = stores.schema.updateAttribute(name, value);
+  ctx.response.body = {
+    success: isSuccess
+  };
+  ctx.response.status = 200;
+});
+
+// 更新指定节点的属性
+(router as any).put('nodes', '/nodes/:id', function(ctx: any) {
+  const { name, value } = ctx.request.data;
+  const { id } = ctx.params;
 
   //   stores.setSchema(createSchemaModel(schema));
-  stores.schema.setName(name);
+  const isSuccess = stores.schema.updateAttributeById(id, name, value);
+  ctx.response.body = {
+    success: isSuccess
+  };
 
   ctx.response.status = 200;
 });

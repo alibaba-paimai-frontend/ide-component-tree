@@ -170,7 +170,7 @@ export function findById(
   if (!id) return null;
 
   let modelNode = null;
-  const filters = [].concat(filterArray ||[]); // 使用逗号隔开
+  const filters = [].concat(filterArray || []); // 使用逗号隔开
 
   traverse(
     model as ISchemaObject,
@@ -187,3 +187,42 @@ export function findById(
 
   return modelNode;
 }
+
+/* ----------------------------------------------------
+    更新节点信息
+----------------------------------------------------- */
+// 定义可更新信息的属性，目前只有 3 个
+enum EDITABLE_ATTRIBUTE {
+  SCREENID = 'screenId',
+  NAME = 'name',
+  ATTRS = 'attrs'
+}
+
+const EDITABLE_ATTRIBUTE_VALUES = Object.values(EDITABLE_ATTRIBUTE);
+
+export function updateNode(
+  node: ISchemaModel,
+  attrName: string,
+  value: string | object
+): boolean {
+  // 如果不是可更新的属性，那么将返回 false
+  if (!EDITABLE_ATTRIBUTE_VALUES.includes(attrName)) {
+    return false;
+  }
+
+  switch (attrName) {
+    case EDITABLE_ATTRIBUTE.SCREENID:
+      node.setScreenId('' + value);
+      break;
+    case EDITABLE_ATTRIBUTE.NAME:
+      node.setName('' + value);
+      break;
+    case EDITABLE_ATTRIBUTE.ATTRS:
+      node.setAttrs(value);
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+// ==============================
