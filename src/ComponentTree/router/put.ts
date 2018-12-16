@@ -1,11 +1,11 @@
-import { stores } from '../stores';
 import Router from 'ette-router';
 
 export const router = new Router();
 
 // 更新根节点的属性
 (router as any).put('nodes', '/nodes/root', function(ctx: any) {
-  const { name, value } = ctx.request.data;
+  const { stores, request } = ctx;
+  const { name, value } = request.data;
   const isSuccess = stores.schema.updateAttribute(name, value);
   ctx.response.body = {
     success: isSuccess
@@ -15,7 +15,8 @@ export const router = new Router();
 
 // 更新指定节点的属性
 (router as any).put('nodes', '/nodes/:id', function(ctx: any) {
-  const { name, value } = ctx.request.data;
+  const { stores, request } = ctx;
+  const { name, value } = request.data;
   const { id } = ctx.params;
 
   //   stores.setSchema(createSchemaModel(schema));
@@ -29,7 +30,8 @@ export const router = new Router();
 
 // 更新被选中的节点 id，同时自动展开
 (router as any).put('nodes', '/selection/:id', function(ctx: any) {
-  const { id } = ctx.params;
+  const { stores, params } = ctx;
+  const { id } = params;
 
   // stores.setSchema(createSchemaModel(schema));
   stores.setSelectedId(id);

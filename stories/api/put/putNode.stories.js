@@ -4,8 +4,11 @@ import { Row, Col, Input, Button, Select } from 'antd';
 import { wInfo } from '../../../.storybook/utils';
 import mdPutNode from './putNode.md';
 
-import { ComponentTreeWithStore, client } from '../../../src';
+import { ComponentTreeFactory } from '../../../src';
 import { treegen } from '../../helper';
+// const { ComponentTreeWithStore, client } = ComponentTreeFactory();
+
+const {ComponentTreeWithStore, client} = ComponentTreeFactory();
 
 const { Option } = Select;
 const styles = {

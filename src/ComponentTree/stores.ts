@@ -1,4 +1,4 @@
-import { types, SnapshotOrInstance } from 'mobx-state-tree';
+import { types, SnapshotOrInstance, Instance } from 'mobx-state-tree';
 import { createEmptyModel } from './schema/util';
 import { ISchemaModel, Schema } from './schema';
 import { debugInteract } from '../lib/debug';
@@ -55,10 +55,10 @@ export const Stores = types
       },
 
       /**
-      * 重置 schema，相当于创建空树
-      * 影响范围：整棵树
-      */
-      resetToEmpty(){
+       * 重置 schema，相当于创建空树
+       * 影响范围：整棵树
+       */
+      resetToEmpty() {
         const nodeToRemoved = (self.schema as any).toJSON();
         self.setSchema(createEmptyModel());
         return nodeToRemoved;
@@ -69,3 +69,14 @@ export const Stores = types
 export const stores = Stores.create({
   schema: createEmptyModel() as any
 });
+
+export interface IStoresModel extends Instance<typeof Stores> {}
+
+/**
+ * 工厂方法，用于创建 stores
+ */
+export function StoresFactory(): IStoresModel {
+  return Stores.create({
+    schema: createEmptyModel() as any
+  });
+}
