@@ -6,7 +6,8 @@ import { observer } from 'mobx-react';
 import { ISchemaObject, findById } from './schema/util';
 import { traverse } from 'ss-tree';
 import { ISchemaModel } from './schema';
-import { stores } from './stores';
+import { StoresFactory, IStoresModel } from './stores';
+import { AppFactory } from './controller/index';
 
 const TreeNode = Tree.TreeNode;
 
@@ -36,7 +37,7 @@ type onExpandFunction = (
 
 type onSelectNodeFunction = (node: ISchemaObject) => void;
 
-interface TreeWithSchemaProps {
+interface TreeProps {
   /**
    * 默认被选中项的 id
    */
@@ -61,7 +62,7 @@ interface TreeWithSchemaProps {
   onSelectNode?: onSelectNodeFunction;
 }
 
-interface TreeProps extends TreeWithSchemaProps {
+interface TreeWithSchemaProps extends TreeProps {
   /**
    * 生成组件树的 schema 对象
    */
@@ -75,8 +76,8 @@ interface TreeState {
 // 推荐使用 decorator 的方式，否则 stories 的导出会缺少 **Prop Types** 的说明
 // 因为 react-docgen-typescript-loader 需要  named export 导出方式
 @observer
-export class ComponentTree extends Component<TreeProps, TreeState> {
-  constructor(props: TreeProps) {
+export class ComponentTree extends Component<TreeWithSchemaProps, TreeState> {
+  constructor(props: TreeWithSchemaProps) {
     super(props);
     this.state = {};
   }
@@ -153,12 +154,7 @@ export class ComponentTree extends Component<TreeProps, TreeState> {
   };
 
   render() {
-    const {
-      schema,
-      selectedId,
-      expandedIds = [],
-      onExpand
-    } = this.props;
+    const { schema, selectedId, expandedIds = [], onExpand } = this.props;
     const keys = expandedIds.slice();
 
     return (
@@ -182,30 +178,50 @@ export class ComponentTree extends Component<TreeProps, TreeState> {
 /* ----------------------------------------------------
     以下是专门配合 store 时的组件版本
 ----------------------------------------------------- */
-const onExpandWithStore = (onExpand: onExpandFunction) => (
-  expandedKeys: string[],
-  info: AntTreeNodeExpandedEvent
-) => {
+const onExpandWithStore = (
+  stores: IStoresModel,
+  onExpand: onExpandFunction
+) => (expandedKeys: string[], info: AntTreeNodeExpandedEvent) => {
   stores.setExpandedIds(expandedKeys);
   onExpand && onExpand(expandedKeys, info);
 };
 
-const onSelectNodeWithStore = (onSelectNode: onSelectNodeFunction) => (
-  node: ISchemaObject
-) => {
+const onSelectNodeWithStore = (
+  stores: IStoresModel,
+  onSelectNode: onSelectNodeFunction
+) => (node: ISchemaObject) => {
   stores.setSelectedId(node.id);
   onSelectNode && onSelectNode(node);
 };
 
-export const ComponentTreeWithStore = observer((props: TreeWithSchemaProps) => {
-  return (
-    <ComponentTree
-      schema={stores.schema}
-      selectedId={stores.selectedId}
-      expandedIds={stores.expandedIds}
-      onExpand={onExpandWithStore(props.onExpand)}
-      onSelectNode={onSelectNodeWithStore(props.onSelectNode)}
-      {...props}
-    />
-  );
-});
+/**
+ * 科里化创建 ComponentTreeWithStore 组件
+ * @param stores - store 模型实例
+ */
+export const ComponentTreeAddStore = (stores: IStoresModel) =>
+  observer(function ComponentTreeWithStore(props: TreeWithSchemaProps) {
+    return (
+      <ComponentTree
+        schema={stores.schema}
+        selectedId={stores.selectedId}
+        expandedIds={stores.expandedIds}
+        onExpand={onExpandWithStore(stores, props.onExpand)}
+        onSelectNode={onSelectNodeWithStore(stores, props.onSelectNode)}
+        {...props}
+      />
+    );
+  });
+/**
+ * 工厂函数，每调用一次就获取一副 MVC
+ * 用于隔离不同的 ComponentTreeWithStore 的上下文
+ */
+export const ComponentTreeFactory = () => {
+  const stores = StoresFactory(); // 创建 model
+  const app = AppFactory(stores); // 创建 controller，并挂载 model
+  return {
+    stores,
+    app,
+    client: app.client,
+    ComponentTreeWithStore: ComponentTreeAddStore(stores)
+  };
+};

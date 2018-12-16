@@ -4,8 +4,11 @@ import { Row, Col, Input, Button } from 'antd';
 import { wInfo } from '../../../.storybook/utils';
 import mdDelNode from './delNode.md';
 
-import { ComponentTreeWithStore, client } from '../../../src';
+import { ComponentTreeFactory } from '../../../src';
 import { treegen } from '../../helper';
+// const { ComponentTreeWithStore, client } = ComponentTreeFactory();
+
+const {ComponentTreeWithStore, client} = ComponentTreeFactory();
 
 const styles = {
   demoWrap: {
@@ -31,21 +34,16 @@ function removeNodeById() {
   }
 
   // 移除指定节点
-  client
-    .del(`/nodes/${id}`)
-    .then(res => {
-      const { status, body } = res;
-      if (status === 200) {
-        const node = body.node || {};
-        document.getElementById('info').innerText = `被删除节点信息：\n` + JSON.stringify(
-          node,
-          null,
-          4
-        );
-        // 同时选中父节点
-        client.put(`/selection/${id}`);
-      }
-    });
+  client.del(`/nodes/${id}`).then(res => {
+    const { status, body } = res;
+    if (status === 200) {
+      const node = body.node || {};
+      document.getElementById('info').innerText =
+        `被删除节点信息：\n` + JSON.stringify(node, null, 4);
+      // 同时选中父节点
+      client.put(`/selection/${id}`);
+    }
+  });
 }
 storiesOf('API - del', module)
   .addParameters(wInfo(mdDelNode))

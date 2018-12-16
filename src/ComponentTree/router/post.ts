@@ -1,4 +1,3 @@
-import { stores } from '../stores';
 import { createSchemaModel, getAllNodes } from '../schema/util';
 import Router from 'ette-router';
 
@@ -6,7 +5,8 @@ export const router = new Router();
 
 // 获取所有的节点
 (router as any).post('nodes', '/nodes', function(ctx: any) {
-  const { schema } = ctx.request.data;
+  const { stores, request } = ctx;
+  const { schema } = request.data;
 
   // const newSchema = createSchemaModel(schema);
   stores.setSchema(createSchemaModel(schema));
