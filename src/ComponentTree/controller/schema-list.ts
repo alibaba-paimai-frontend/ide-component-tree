@@ -3,8 +3,8 @@ import {
   ISchemaObject,
   genCompIdByName,
   createSchemaModel
-} from '../schema/util';
-import { ISchemaModel } from '../schema/index';
+} from 'ide-tree';
+// import { ISchemaModel } from 'ide-tree';
 
 
 declare const GOURD_WIDGET: {
@@ -63,17 +63,4 @@ export function getSchemaByName(name: string): ISchemaObject {
     schema.props = compFromList.props;
   }
   return schema;
-}
-
-/**
- * 根据名字创建对应的模型
- * 比如传入 'Form' 就能生成一个标准的 Form 模型
- *
- * @export
- * @param {string} name
- * @returns {TSchemaModel}
- */
-export function createModelByName(name: string): ISchemaModel {
-  const schema = getSchemaByName(name);
-  return createSchemaModel(schema);
 }
