@@ -2,12 +2,22 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { StoresFactory, IStoresModel } from './schema/stores';
 import { AppFactory } from './controller/index';
-import { ISchemaTreeProps, SchemaTree } from 'ide-tree';
-import { IContextMenuProps, ContextMenu } from 'ide-context-menu';
+import {
+  IStoresModel as ISchemaTreeStoresModel,
+  SchemaTree,
+  ISchemaTreeEvent
+} from 'ide-tree';
+import {
+  IStoresModel as IContextMenuStoresModel,
+  ContextMenu,
+  IContextMenuEvent
+} from 'ide-context-menu';
 
 export interface IComponentTreeProps {
-  schemaTree: ISchemaTreeProps;
-  contextMenu: IContextMenuProps;
+  schemaTree: ISchemaTreeStoresModel;
+  contextMenu: IContextMenuStoresModel;
+  schemaTreeEvent: ISchemaTreeEvent;
+  contextMenuEvent: IContextMenuEvent;
 }
 
 // 推荐使用 decorator 的方式，否则 stories 的导出会缺少 **Prop Types** 的说明
@@ -20,12 +30,17 @@ export class ComponentTree extends Component<IComponentTreeProps> {
   }
 
   render() {
-    const { schemaTree, contextMenu } = this.props;
+    const {
+      schemaTree,
+      contextMenu,
+      schemaTreeEvent,
+      contextMenuEvent
+    } = this.props;
 
     return (
       <div>
-        <SchemaTree {...schemaTree} />
-        <ContextMenu {...contextMenu}/>
+        <SchemaTree {...schemaTree} {...schemaTreeEvent} />
+        <ContextMenu {...contextMenu} {...contextMenuEvent} />
       </div>
     );
   }
@@ -41,7 +56,13 @@ export class ComponentTree extends Component<IComponentTreeProps> {
  */
 export const ComponentTreeAddStore = (stores: IStoresModel) =>
   observer(function ComponentTreeWithStore(props: IComponentTreeProps) {
-    return <ComponentTree schemaTree={stores.schemaTree} contextMenu={stores.contextMenu} {...props} />;
+    return (
+      <ComponentTree
+        schemaTree={stores.schemaTree}
+        contextMenu={stores.contextMenu}
+        {...props}
+      />
+    );
   });
 /**
  * 工厂函数，每调用一次就获取一副 MVC

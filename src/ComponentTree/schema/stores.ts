@@ -11,8 +11,14 @@ import {
   ContextMenuFactory
 } from 'ide-context-menu';
 
+export const STORE_ID_PREIX = 'sct_';
+
 export const Stores: any = types
   .model('StoresModel', {
+    id: types.refinement(
+      types.identifier,
+      identifier => identifier.indexOf(STORE_ID_PREIX) === 0
+    ),
     schemaTree: SchemaTreeStores,
     contextMenu: ContextMenuStores
   })
@@ -29,6 +35,7 @@ export const Stores: any = types
 
 export interface IStoresModel extends Instance<typeof Stores> {}
 
+let autoId = 1;
 /**
  * 工厂方法，用于创建 stores，同时注入对应子元素的 client 和 app
  */
@@ -46,6 +53,7 @@ export function StoresFactory(): IStoresModel {
   // 依赖注入，方便在 controller 中可以直接调用子组件的 controller
   return Stores.create(
     {
+      id: `${STORE_ID_PREIX}${autoId++}`,
       schemaTree: schemaTreeStores,
       contextMenu: contextMenuStores
     },
