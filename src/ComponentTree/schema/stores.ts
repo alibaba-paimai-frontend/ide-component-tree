@@ -41,17 +41,19 @@ let autoId = 1;
  */
 export function StoresFactory(): IStoresModel {
   const {
+    app: schemaTreeApp,
     client: schemaTreeClient,
     stores: schemaTreeStores
   } = SchemaTreeFactory();
   const {
+    app: contextMenuApp,
     client: contextMenuClient,
     stores: contextMenuStores
   } = ContextMenuFactory();
 
   // see: https://github.com/mobxjs/mobx-state-tree#dependency-injection
   // 依赖注入，方便在 controller 中可以直接调用子组件的 controller
-  return Stores.create(
+  const stores = Stores.create(
     {
       id: `${STORE_ID_PREIX}${autoId++}`,
       schemaTree: schemaTreeStores,
@@ -62,4 +64,12 @@ export function StoresFactory(): IStoresModel {
       contextMenuClient
     }
   );
+
+  return {
+    stores,
+    innerApps: {
+      schemaTree: schemaTreeApp,
+      contextMenu: contextMenuApp
+    }
+  };
 }

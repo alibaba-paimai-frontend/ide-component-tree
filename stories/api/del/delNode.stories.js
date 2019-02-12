@@ -8,7 +8,7 @@ import { ComponentTreeFactory } from '../../../src';
 import { treegen } from '../../helper';
 // const { ComponentTreeWithStore, client } = ComponentTreeFactory();
 
-const {ComponentTreeWithStore, client} = ComponentTreeFactory();
+const { ComponentTreeWithStore, client } = ComponentTreeFactory();
 
 const styles = {
   demoWrap: {
@@ -19,11 +19,11 @@ const styles = {
 
 function createNew() {
   const schema = treegen({});
-  client.post('/nodes', { schema: schema });
+  client.post('/clients/schemaTree/tree', { schema: schema });
 }
 
 function resetSchema() {
-  client.del('/nodes');
+  client.del('/clients/schemaTree/tree');
 }
 
 function removeNodeById() {
@@ -34,7 +34,7 @@ function removeNodeById() {
   }
 
   // 移除指定节点
-  client.del(`/nodes/${id}`).then(res => {
+  client.del(`/clients/schemaTree/nodes/${id}`).then(res => {
     const { status, body } = res;
     if (status === 200) {
       const node = body.node || {};

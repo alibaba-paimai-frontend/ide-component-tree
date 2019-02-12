@@ -8,7 +8,7 @@ import { ComponentTreeFactory } from '../../../src';
 import { treegen } from '../../helper';
 // const { ComponentTreeWithStore, client } = ComponentTreeFactory();
 
-const {ComponentTreeWithStore, client} = ComponentTreeFactory();
+const { ComponentTreeWithStore, client } = ComponentTreeFactory();
 
 const { Option } = Select;
 const styles = {
@@ -22,11 +22,14 @@ let selectedAttrName = '';
 
 function createNew() {
   const schema = treegen({});
-  client.post('/nodes', { schema: schema });
+  client.post('/clients/schemaTree/tree', { schema: schema });
 }
 
 function updateRootName() {
-  client.put('/nodes/root', { name: 'name', value: 'ggggod' });
+  client.put('/clients/schemaTree/tree/root', {
+    name: 'name',
+    value: 'ggggod'
+  });
 }
 
 function handleChange(value) {
@@ -49,12 +52,15 @@ function updateById() {
 
   // 更新节点属性，返回更新后的数值
   client
-    .put(`/nodes/${id}`, { name: selectedAttrName, value: value })
+    .put(`/clients/schemaTree/nodes/${id}`, {
+      name: selectedAttrName,
+      value: value
+    })
     .then(res => {
       const { status, body } = res;
       if (status === 200) {
         const isSuccess = body.success;
-        client.get(`/nodes/${id}`).then(res => {
+        client.get(`/clients/schemaTree/nodes/${id}`).then(res => {
           const { status, body } = res;
           if (status === 200) {
             const node = body.node || {};
@@ -65,7 +71,7 @@ function updateById() {
         });
 
         // 同时选中那个节点
-        client.put(`/selection/${id}`);
+        client.put(`/clients/schemaTree/selection/${id}`);
       }
     })
     .catch(err => {

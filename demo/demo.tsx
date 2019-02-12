@@ -11,8 +11,9 @@ import { ComponentTree } from '../src/index';
  */
 const base = id => {
   return {
-    name: 'Row',
+    name: 'Row33',
     id: id,
+    screenId: id,
     props: {
       isZebra: true,
       dataSource: []
@@ -23,8 +24,9 @@ const schema2 = {
   ...base('Row_1'),
   children: [
     {
-      name: 'Col',
+      name: 'Col22',
       id: 'Col_1',
+      screenId: 'Col_1',
       children: [base('Row_2'), base('Row_3')]
     }
   ]

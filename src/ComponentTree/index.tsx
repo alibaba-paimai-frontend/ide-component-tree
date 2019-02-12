@@ -1,50 +1,74 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import { StoresFactory, IStoresModel } from './schema/stores';
-import { AppFactory } from './controller/index';
+
 import {
-  IStoresModel as ISchemaTreeStoresModel,
+  ISchemaTreeProps,
   SchemaTree,
-  ISchemaTreeEvent
+  SchemaTreeAddStore,
+  TSchemaTreeControlledKeys
 } from 'ide-tree';
 import {
-  IStoresModel as IContextMenuStoresModel,
+  IContextMenuProps,
   ContextMenu,
-  IContextMenuEvent
+  ContextMenuAddStore,
+  TStoresControlledKeys as TStoresMenuControlledKeys
 } from 'ide-context-menu';
 
+import { debugRender } from '../lib/debug';
+import { StoresFactory, IStoresModel } from './schema/stores';
+import { AppFactory } from './controller/index';
+
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+type OptionalProps<T, K> = T | Omit<T, K>;
+type OptionalSchemaTreeProps = OptionalProps<
+  ISchemaTreeProps,
+  TSchemaTreeControlledKeys
+>;
+type OptionalMenuProps = OptionalProps<
+  IContextMenuProps,
+  TStoresMenuControlledKeys
+>;
 export interface IComponentTreeProps {
-  schemaTree: ISchemaTreeStoresModel;
-  contextMenu: IContextMenuStoresModel;
-  schemaTreeEvent: ISchemaTreeEvent;
-  contextMenuEvent: IContextMenuEvent;
+  /**
+   * schema tree 配置项
+   */
+  schemaTree: OptionalSchemaTreeProps;
+
+  /**
+   * context menu 配置项
+   */
+  contextMenu: OptionalMenuProps;
 }
 
-// 推荐使用 decorator 的方式，否则 stories 的导出会缺少 **Prop Types** 的说明
-// 因为 react-docgen-typescript-loader 需要  named export 导出方式
-@observer
-export class ComponentTree extends Component<IComponentTreeProps> {
-  constructor(props: IComponentTreeProps) {
-    super(props);
-    this.state = {};
-  }
+interface ISubComponents {
+  SchemaTreeComponent: React.ComponentType<OptionalSchemaTreeProps>;
+  ContextMenuComponent: React.ComponentType<OptionalMenuProps>;
+}
 
-  render() {
-    const {
-      schemaTree,
-      contextMenu,
-      schemaTreeEvent,
-      contextMenuEvent
-    } = this.props;
+/**
+ * 使用高阶组件打造的组件生成器
+ * @param subComponents - 子组件列表
+ */
+export const ComponentTreeHOC = (subComponents: ISubComponents) => {
+  const ComponentTreeHOC = (props: IComponentTreeProps) => {
+    const { SchemaTreeComponent, ContextMenuComponent } = subComponents;
+    const { schemaTree, contextMenu } = props;
 
     return (
       <div>
-        <SchemaTree {...schemaTree} {...schemaTreeEvent} />
-        <ContextMenu {...contextMenu} {...contextMenuEvent} />
+        <SchemaTreeComponent {...schemaTree} />
+        <ContextMenuComponent {...contextMenu} />
       </div>
     );
   }
-}
+  ComponentTreeHOC.displayName = 'ComponentTreeHOC';
+  return observer(ComponentTreeHOC);
+};
+
+export const ComponentTree = ComponentTreeHOC({
+  SchemaTreeComponent: SchemaTree,
+  ContextMenuComponent: ContextMenu
+});
 
 /* ----------------------------------------------------
     以下是专门配合 store 时的组件版本
@@ -54,23 +78,32 @@ export class ComponentTree extends Component<IComponentTreeProps> {
  * 科里化创建 ComponentTreeWithStore 组件
  * @param stores - store 模型实例
  */
-export const ComponentTreeAddStore = (stores: IStoresModel) =>
-  observer(function ComponentTreeWithStore(props: IComponentTreeProps) {
+export const ComponentTreeAddStore = (stores: IStoresModel) => {
+  const ComponentTreeHasSubStore = ComponentTreeHOC({
+    SchemaTreeComponent: SchemaTreeAddStore(stores.schemaTree),
+    ContextMenuComponent: ContextMenuAddStore(stores.contextMenu)
+  });
+
+  const ComponentTreeWithStore = (props: IComponentTreeProps) => {
+    const { schemaTree, contextMenu } = props;
+    debugRender(`[${stores.id}] rendering`);
     return (
-      <ComponentTree
-        schemaTree={stores.schemaTree}
-        contextMenu={stores.contextMenu}
-        {...props}
+      <ComponentTreeHasSubStore
+        schemaTree={schemaTree}
+        contextMenu={contextMenu}
       />
     );
-  });
+  }
+  ComponentTreeWithStore.displayName = 'ComponentTreeWithStore';
+  return observer(ComponentTreeWithStore);
+};
 /**
  * 工厂函数，每调用一次就获取一副 MVC
  * 用于隔离不同的 ComponentTreeWithStore 的上下文
  */
 export const ComponentTreeFactory = () => {
-  const stores = StoresFactory(); // 创建 model
-  const app = AppFactory(stores); // 创建 controller，并挂载 model
+  const { stores, innerApps } = StoresFactory(); // 创建 model
+  const app = AppFactory(stores, innerApps); // 创建 controller，并挂载 model
   return {
     stores,
     app,

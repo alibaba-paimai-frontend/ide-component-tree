@@ -1,6 +1,6 @@
 import { invariant } from '../../lib/util';
 import {
-  ISchemaObject,
+  ISchemaProps,
   genCompIdByName,
   createSchemaModel
 } from 'ide-tree';
@@ -47,20 +47,20 @@ export const COMP_LIST_MAP = genCompListMap(COMP_LIST);
  *
  * @export
  * @param {string} name - 组件名
- * @returns {ISchemaObject} - schema 对象
+ * @returns {ISchemaProps} - schema 对象
  */
-export function getSchemaByName(name: string): ISchemaObject {
-  invariant(!!name, 'schema 对象的 name 不能为空');
-  let schema: ISchemaObject = {
-    name: name,
-    id: genCompIdByName(name),
-    screenId: genCompIdByName(name)
-  };
+// export function getSchemaByName(name: string): ISchemaProps {
+//   invariant(!!name, 'schema 对象的 name 不能为空');
+//   let schema: ISchemaProps = {
+//     name: name,
+//     id: genCompIdByName(name),
+//     screenId: genCompIdByName(name)
+//   };
 
-  // 如果有默认属性，新增上去
-  let compFromList = COMP_LIST_MAP[name];
-  if (compFromList && compFromList.props) {
-    schema.props = compFromList.props;
-  }
-  return schema;
-}
+//   // 如果有默认属性，新增上去
+//   let compFromList = COMP_LIST_MAP[name];
+//   if (compFromList && compFromList.props) {
+//     schema.props = compFromList.props;
+//   }
+//   return schema;
+// }

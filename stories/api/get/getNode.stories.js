@@ -26,7 +26,7 @@ const styles = {
 let nodes = [];
 
 const getNodeInfo = client => () => {
-  client.get('/nodes?filter=id,attrs').then(res => {
+  client.get('/clients/schemaTree/nodes?filter=id,attrs').then(res => {
     const { status, body } = res;
     if (status === 200) {
       nodes = body.nodes;
@@ -38,15 +38,15 @@ const getNodeInfo = client => () => {
 
 const createNew = client => () => {
   const schema = treegen({});
-  client.post('/nodes', { schema: schema });
+  client.post('/clients/schemaTree/tree', { schema: schema });
 
   const menu = menuGen();
-  client.post('/menu', { menu: menu });
+  client.post('/clients/contextMenu/menu', { menu: menu });
 };
 
 const getById = client => () => {
   const id = document.getElementById('nodeId').value;
-  client.get(`/nodes/${id}`).then(res => {
+  client.get(`/clients/schemaTree/nodes/${id}`).then(res => {
     const { status, body } = res;
     if (status === 200) {
       const node = body.node || {};
@@ -59,7 +59,7 @@ const getById = client => () => {
   });
 
   // 同时选中那个节点
-  client.put(`/selection/${id}`);
+  client.put(`/clients/schemaTree/selection/${id}`);
 };
 
 const onRightClick = client => ({ node, event }) => {
@@ -78,7 +78,7 @@ const onRightClick = client => ({ node, event }) => {
 const onClickItem = client => (key, keyPath, item) => {
   console.log(`当前点击项的 id: ${key}`);
   // 关闭菜单
-  client.put('/menu', { name: 'visible', value: false });
+  client.put('/clients/contextMenu/menu', { name: 'visible', value: false });
 };
 
 storiesOf('API - get', module)
@@ -93,10 +93,10 @@ storiesOf('API - get', module)
           <Button onClick={createNew(client1)}>创建随机树和菜单</Button>
 
           <ComponentTreeWithStore1
-            schemaTreeEvent={{
+            schemaTree={{
               onRightClickNode: onRightClick(client1)
             }}
-            contextMenuEvent={{
+            contextMenu={{
               onClickItem: onClickItem(client1)
             }}
           />
@@ -122,10 +122,10 @@ storiesOf('API - get', module)
             }
           />
           <ComponentTreeWithStore2
-            schemaTreeEvent={{
+            schemaTree={{
               onRightClickNode: onRightClick(client2)
             }}
-            contextMenuEvent={{
+            contextMenu={{
               onClickItem: onClickItem(client2)
             }}
           />

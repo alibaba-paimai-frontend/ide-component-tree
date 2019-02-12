@@ -8,13 +8,13 @@ const { getExternal } = require('./webpack-helper');
 
 const targetDir = 'dist';
 
-const defaultConfig = common.map(config => {
+module.exports = common.map(config => {
+  /* 这份配置是用于引入到浏览器中时候用的
+     比如 https://unpkg.com/ide-component-tree@0.1.1/dist/index.umd.js
+  */
   return merge(config, {
     entry: './src/index.tsx',
-    output: {
-      filename: 'index.js',
-      path: path.resolve(__dirname, 'dist')
-    },
+    externals: getExternal([], true),
     mode: 'production',
     devtool: 'source-map',
     optimization: {
@@ -25,21 +25,13 @@ const defaultConfig = common.map(config => {
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production')
       })
-    ]
-  });
-});
-
-// 我们输出三份配置
-module.exports = defaultConfig.concat([
-  merge(defaultConfig[0], {
-    entry: './src/index.tsx',
-    externals: getExternal(false, ['styled-components']),
+    ],
     output: {
       filename: 'index.umd.js',
-      path: path.resolve(__dirname, 'dist'),
       libraryTarget: 'umd',
       library: 'ideComponentTree',
+      path: path.resolve(__dirname, 'dist'),
       umdNamedDefine: true
     }
-  })
-]);
+  });
+});
