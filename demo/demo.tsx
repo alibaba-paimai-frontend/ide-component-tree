@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { render } from 'react-dom';
+import Ette, { Request } from 'ette';
 import { createSchemaModel } from 'ide-tree';
 import { IMenuObject } from 'ide-context-menu';
 
