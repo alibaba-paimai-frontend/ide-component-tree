@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
+import { ThemeProvider } from 'styled-components';
+
+import { StyledContainer } from './styles';
 
 import {
   ISchemaTreeProps,
@@ -14,9 +17,12 @@ import {
   TStoresControlledKeys as TStoresMenuControlledKeys
 } from 'ide-context-menu';
 
+import { ComponentList, IComponentListItem } from 'ide-component-list';
+
 import { debugRender } from '../lib/debug';
 import { StoresFactory, IStoresModel } from './schema/stores';
 import { AppFactory } from './controller/index';
+import { COMP_LIST } from './controller/comps-gourd';
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 type OptionalProps<T, K> = T | Omit<T, K>;
@@ -28,16 +34,43 @@ type OptionalMenuProps = OptionalProps<
   IContextMenuProps,
   TStoresMenuControlledKeys
 >;
+
+
+export interface IStyles {
+  [propName: string]: React.CSSProperties;
+}
+
+export interface IComponentTreeStyles extends IStyles {
+  container ?: React.CSSProperties;
+}
+
+export interface IComponentTreeTheme {
+  main: string;
+  [prop: string]: any;
+}
+
+
 export interface IComponentTreeProps {
   /**
    * schema tree 配置项
    */
-  schemaTree: OptionalSchemaTreeProps;
+  schemaTree?: OptionalSchemaTreeProps;
 
   /**
    * context menu 配置项
    */
-  contextMenu: OptionalMenuProps;
+  contextMenu?: OptionalMenuProps;
+
+  /**
+   * 样式集合，方便外部控制
+   */
+    styles?: IComponentTreeStyles;
+
+    /**
+     * 设置主题
+     */
+    theme?: IComponentTreeTheme;
+
 }
 
 interface ISubComponents {
@@ -45,22 +78,41 @@ interface ISubComponents {
   ContextMenuComponent: React.ComponentType<OptionalMenuProps>;
 }
 
+
+
+export const DEFAULT_PROPS: IComponentTreeProps = {
+  theme: {
+    main: '#25ab68'
+  },
+  styles: {
+    container: {}
+  }
+};
+
 /**
  * 使用高阶组件打造的组件生成器
  * @param subComponents - 子组件列表
  */
 export const ComponentTreeHOC = (subComponents: ISubComponents) => {
-  const ComponentTreeHOC = (props: IComponentTreeProps) => {
+  const ComponentTreeHOC = (props: IComponentTreeProps = DEFAULT_PROPS) => {
     const { SchemaTreeComponent, ContextMenuComponent } = subComponents;
-    const { schemaTree, contextMenu } = props;
+    const mergedProps = Object.assign({}, DEFAULT_PROPS, props);
+    const { schemaTree, contextMenu, styles, theme } = mergedProps;
 
-    return (
-      <div>
-        <SchemaTreeComponent {...schemaTree} />
-        <ContextMenuComponent {...contextMenu} />
-      </div>
-    );
-  }
+    const onSelectItem = (item: IComponentListItem)=>{
+      console.log('select item:', item);
+    }
+
+    return <ThemeProvider theme={theme}>
+      <StyledContainer style={styles.container} className="ide-component-tree-container">
+          <SchemaTreeComponent {...schemaTree} />
+          <ContextMenuComponent {...contextMenu} />
+
+        <ComponentList list={COMP_LIST} onSelectItem={onSelectItem}/>
+        </StyledContainer>
+      </ThemeProvider>;
+    
+  };
   ComponentTreeHOC.displayName = 'ComponentTreeHOC';
   return observer(ComponentTreeHOC);
 };
@@ -93,7 +145,7 @@ export const ComponentTreeAddStore = (stores: IStoresModel) => {
         contextMenu={contextMenu}
       />
     );
-  }
+  };
   ComponentTreeWithStore.displayName = 'ComponentTreeWithStore';
   return observer(ComponentTreeWithStore);
 };

@@ -1,3 +1,5 @@
+import { IComponentListGroup } from 'ide-component-list';
+
 import { invariant } from '../../lib/util';
 import {
   ISchemaProps,
@@ -8,12 +10,13 @@ import {
 
 
 declare const GOURD_WIDGET: {
-  list: any;
+  list: IComponentListGroup;
+  schema: any;
 };
 
 // 公共组件列表
 invariant(
-  GOURD_WIDGET && GOURD_WIDGET.list,
+  !!GOURD_WIDGET.list,
   '不存在变量名为 GOURD_WIDGET 的公共组件列表'
 );
 interface IComponentInfo {

@@ -39,7 +39,7 @@ let autoId = 1;
 /**
  * 工厂方法，用于创建 stores，同时注入对应子元素的 client 和 app
  */
-export function StoresFactory(): IStoresModel {
+export function StoresFactory() {
   const {
     app: schemaTreeApp,
     client: schemaTreeClient,
