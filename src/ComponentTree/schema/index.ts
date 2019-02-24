@@ -21,6 +21,7 @@ import { updateModelAttribute } from './util';
 // export const CODE_LANGUAGES = Object.values(ECodeLanguage);
 
 
+
 // 获取被 store 控制的 model key 的列表
 export type TComponentTreeControlledKeys =
   keyof SnapshotOrInstance<typeof ComponentTreeModel> | TBaseControlledKeys;
@@ -37,7 +38,7 @@ export const CONTROLLED_KEYS: string[] = BASE_CONTROLLED_KEYS.concat([
 export const ComponentTreeModel = BaseModel
   .named('ComponentTreeModel')
   .props({
-    listVisible: types.optional(types.boolean, true),
+    listVisible: types.optional(types.boolean, false),
     // language: types.optional(
     //   types.enumeration('Type', CODE_LANGUAGES),
     //   ECodeLanguage.JS

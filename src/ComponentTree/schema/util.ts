@@ -47,8 +47,7 @@ export function createEmptyModel() {
 ----------------------------------------------------- */
 // 定义 menu 可更新信息的属性
 const EDITABLE_ATTRIBUTE = BASE_CONTROLLED_KEYS.concat([
-    'visible',
-    'text'
+    'listVisible'
 ]);
 
 export const updateModelAttribute = updateInScope(EDITABLE_ATTRIBUTE);

@@ -5,6 +5,21 @@ import { updateStylesMiddleware, updateThemeMiddleware } from 'ide-lib-base-comp
 import { IContext } from './helper';
 export const router = new Router();
 
+// 更新菜单项属性
+router.put('model', '/model', function (ctx: IContext) {
+  const { stores, request } = ctx;
+  const { name, value } = request.data;
+
+  //   stores.setSchema(createSchemaModel(schema));
+  const isSuccess = stores.model.updateAttribute(name, value);
+  ctx.response.body = {
+    success: isSuccess
+  };
+
+  ctx.response.status = 200;
+});
+
+
 // 更新菜单的位置（比如右键显示菜单等等）
 router.put('menu', '/menu/autoposition', async function(ctx: IContext) {
   const { stores, request } = ctx;

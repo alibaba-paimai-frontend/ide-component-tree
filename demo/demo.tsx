@@ -49,7 +49,7 @@ const menu: IMenuObject = {
 };
 
 function onClickItem(key: string, keyPath: Array<string>, item: any) {
-  console.log(`当前点击项的 id: ${key}`);
+  console.log(`[11]当前点击项的 id: ${key}`);
 }
 
 render(
@@ -108,9 +108,18 @@ const eventsInStore = {
     
   },
   onClickMenuItem: (key, keyPath, item) => {
-    console.log(`当前点击项的 id: ${key}`);
+    console.log(`[22]当前点击项的 id: ${key}`);
     // 关闭菜单
     client.put('/clients/contextMenu/menu', { name: 'visible', value: false });
+  },
+  onSelectListItem:(item)=>{
+    console.log('当前选中的组件：', item);
+    client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
+  },
+  onClickListOutside: ()=>{
+    // 点击到外部则隐藏
+    console.log('click outside list');
+    client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
   }
 }
 
@@ -125,6 +134,8 @@ render(
     contextMenu={{
       onClickItem: eventsInStore.onClickMenuItem
     }}
+    onSelectListItem={eventsInStore.onSelectListItem}
+    onClickListOutside={eventsInStore.onClickListOutside}
   />,
   document.getElementById('example-store') as HTMLElement
 );

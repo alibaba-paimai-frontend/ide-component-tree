@@ -1,4 +1,5 @@
-import { types, Instance } from 'mobx-state-tree';
+import { cast, types, Instance, SnapshotOrInstance } from 'mobx-state-tree';
+
 import {
   Stores as SchemaTreeStores,
   IStoresModel as ISchemaTreeStoresModel,
@@ -11,6 +12,9 @@ import {
   ContextMenuFactory
 } from 'ide-context-menu';
 
+import { ComponentTreeModel } from './index';
+import { createEmptyModel } from './util';
+
 export const STORE_ID_PREIX = 'sct_';
 
 export const Stores: any = types
@@ -19,16 +23,23 @@ export const Stores: any = types
       types.identifier,
       identifier => identifier.indexOf(STORE_ID_PREIX) === 0
     ),
+    model: ComponentTreeModel,
     schemaTree: SchemaTreeStores,
     contextMenu: ContextMenuStores
   })
   .actions(self => {
     return {
+      setModel(model: SnapshotOrInstance<typeof self.model>) {
+        self.model = cast(model);
+      },
       setSchemaTree(store: ISchemaTreeStoresModel) {
         self.schemaTree = store;
       },
       setContextMenu(store: IContextMenuStoresModel) {
         self.contextMenu = store;
+      },
+      resetToEmpty() {
+        self.model = createEmptyModel();
       }
     };
   });

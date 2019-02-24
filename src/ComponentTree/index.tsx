@@ -4,10 +4,11 @@ import { ThemeProvider } from 'styled-components';
 // import { useClickOutside } from 'use-events';
 import useWindowSize from '@rehooks/window-size';
 
+import { pick } from 'ide-lib-utils';
 import { based, Omit, OptionalProps, IBaseTheme, IBaseStyles, IBaseComponentProps } from 'ide-lib-base-component';
 
 
-import { StyledContainer, StyledListWrap } from './styles';
+import { StyledContainer, StyledListWrap, StyledModalLayer } from './styles';
 
 import {
   ISchemaTreeProps,
@@ -26,6 +27,7 @@ import { ComponentList, IComponentListItem } from 'ide-component-list';
 
 import { debugRender, debugInteract } from '../lib/debug';
 import { StoresFactory, IStoresModel } from './schema/stores';
+import { TComponentTreeControlledKeys, CONTROLLED_KEYS } from './schema/index';
 import { AppFactory } from './controller/index';
 import { COMP_LIST } from './controller/comps-gourd';
 
@@ -109,11 +111,6 @@ export const ComponentTreeHOC = (subComponents: ISubComponents) => {
 
     const refList = React.useRef(null);
 
-    // 监听是否点击到 list 外面，因性能问题，暂时先不用这个函数
-    // const [isClickListOutside] = useClickOutside(refList, event => {
-    //   onClickListOutside && onClickListOutside(event);
-    // });
-
     // 监听 window 大小
     const windowSize = useWindowSize();
 
@@ -121,16 +118,43 @@ export const ComponentTreeHOC = (subComponents: ISubComponents) => {
       onSelectListItem && onSelectListItem(item);
     }
 
+    // 监听是否点击到 list 外面
+    const onClickModal = (ref: React.RefObject<HTMLElement>) => (e: MouseEvent) => {
+      if (!refList) return;
+      const { current } = ref;
+
+      // 获取当前元素的宽、高；
+      const w = current.offsetWidth;
+      const h = current.offsetHeight;
+      const x = 200, y = 10; // 元素起点位置
+      const { clientX, clientY } = e; // 鼠标点击位置
+
+      // 点击位置落在区域外
+      const wasOutSide = !(
+        clientX > x &&
+        clientX < x + w &&
+        clientY > y &&
+        clientY < y + h
+      );
+
+      // const containedTarget = current.contains(e.target as HTMLElement);
+      if (current !== null && wasOutSide) {
+        onClickListOutside(e);
+      }
+    }
+
     // debugInteract(`[isClickListOutside]: ${isClickListOutside}`)
-    return <ThemeProvider theme={theme}>
-      <StyledContainer style={styles.container} className="ide-component-tree-container">
-          <SchemaTreeComponent {...schemaTree} />
-          <ContextMenuComponent {...contextMenu} />
-        <StyledListWrap className="component-list-wrap" ref={refList} visible={listVisible} height={windowSize.innerHeight}>
-          <ComponentList list={COMP_LIST} onSelectItem={onSelectItem}/>
-        </StyledListWrap>
-        </StyledContainer>
-      </ThemeProvider>;
+    return <StyledContainer style={styles.container} className="ide-component-tree-container">
+      <SchemaTreeComponent {...schemaTree} />
+      <ContextMenuComponent {...contextMenu} />
+
+      <StyledModalLayer className="modal-list" visible={listVisible} height={windowSize.innerHeight} width={windowSize.innerWidth} onClick={onClickModal(refList)}>
+          <StyledListWrap className="component-list-wrap" ref={refList} visible={listVisible} height={windowSize.innerHeight}>
+            <ComponentList list={COMP_LIST} onSelectItem={onSelectItem} />
+          </StyledListWrap>
+        </StyledModalLayer>
+
+    </StyledContainer>;
     
   };
   ComponentTreeHOC.displayName = 'ComponentTreeHOC';
@@ -146,6 +170,19 @@ export const ComponentTree = ComponentTreeHOC({
     以下是专门配合 store 时的组件版本
 ----------------------------------------------------- */
 
+// 要展现 list 面板的 3 种情况
+const shouldViewList = ['createSub', 'createUp', 'createDown'];
+const onClickItemWithStore = (
+  stores: IStoresModel,
+  onClickItem: (key: string, keyPath: Array<string>, item: any) => void
+) => (key: string, keyPath: Array<string>, item: any) => {
+  if (!!~shouldViewList.indexOf(key)) {
+    stores.model.setListVisible(true);
+  }
+  // stores.setValue(newValue);
+  onClickItem && onClickItem(key, keyPath, item);
+};
+
 /**
  * 科里化创建 ComponentTreeWithStore 组件
  * @param stores - store 模型实例
@@ -156,13 +193,22 @@ export const ComponentTreeAddStore = (stores: IStoresModel) => {
     ContextMenuComponent: ContextMenuAddStore(stores.contextMenu)
   });
 
-  const ComponentTreeWithStore = (props: IComponentTreeProps) => {
-    const { schemaTree, contextMenu } = props;
+  const ComponentTreeWithStore = (props: Omit<IComponentTreeProps, TComponentTreeControlledKeys>) => {
+    const { schemaTree, contextMenu, ...otherProps} = props;
+    const { model } = stores;
+    const controlledProps = pick(model, CONTROLLED_KEYS);
     debugRender(`[${stores.id}] rendering`);
+
+    const { onClickItem, ...otherContextMenuProps } = contextMenu;
     return (
       <ComponentTreeHasSubStore
         schemaTree={schemaTree}
-        contextMenu={contextMenu}
+        contextMenu={{
+          onClickItem: onClickItemWithStore(stores, onClickItem),
+          ...otherContextMenuProps
+        }}
+        {...controlledProps}
+        {...otherProps}
       />
     );
   };
