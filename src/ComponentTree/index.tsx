@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider } from 'styled-components';
+// import { useClickOutside } from 'use-events';
+import useWindowSize from '@rehooks/window-size';
 
-import { StyledContainer } from './styles';
+import { based, Omit, OptionalProps, IBaseTheme, IBaseStyles, IBaseComponentProps } from 'ide-lib-base-component';
+
+
+import { StyledContainer, StyledListWrap } from './styles';
 
 import {
   ISchemaTreeProps,
@@ -19,13 +24,11 @@ import {
 
 import { ComponentList, IComponentListItem } from 'ide-component-list';
 
-import { debugRender } from '../lib/debug';
+import { debugRender, debugInteract } from '../lib/debug';
 import { StoresFactory, IStoresModel } from './schema/stores';
 import { AppFactory } from './controller/index';
 import { COMP_LIST } from './controller/comps-gourd';
 
-type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
-type OptionalProps<T, K> = T | Omit<T, K>;
 type OptionalSchemaTreeProps = OptionalProps<
   ISchemaTreeProps,
   TSchemaTreeControlledKeys
@@ -35,22 +38,31 @@ type OptionalMenuProps = OptionalProps<
   TStoresMenuControlledKeys
 >;
 
-
-export interface IStyles {
-  [propName: string]: React.CSSProperties;
-}
-
-export interface IComponentTreeStyles extends IStyles {
+export interface IComponentTreeStyles extends IBaseStyles {
   container ?: React.CSSProperties;
 }
 
-export interface IComponentTreeTheme {
+export interface IComponentTreeTheme extends IBaseTheme{
   main: string;
-  [prop: string]: any;
 }
 
 
-export interface IComponentTreeProps {
+export interface IComponentTreeEvent {
+  /**
+   * 点击 list 外面时的回调函数
+   */
+  onClickListOutside?: (e: MouseEvent) => void;
+
+
+  /**
+   * 点击选择 component item 的回调
+   */
+  onSelectListItem?: (item: IComponentListItem) => void;
+
+}
+
+
+export interface IComponentTreeProps extends IComponentTreeEvent, IBaseComponentProps {
   /**
    * schema tree 配置项
    */
@@ -61,15 +73,10 @@ export interface IComponentTreeProps {
    */
   contextMenu?: OptionalMenuProps;
 
-  /**
-   * 样式集合，方便外部控制
-   */
-    styles?: IComponentTreeStyles;
-
     /**
-     * 设置主题
+     * 是否显示组件列表
      */
-    theme?: IComponentTreeTheme;
+  listVisible?: boolean;
 
 }
 
@@ -84,6 +91,7 @@ export const DEFAULT_PROPS: IComponentTreeProps = {
   theme: {
     main: '#25ab68'
   },
+  listVisible: false,
   styles: {
     container: {}
   }
@@ -97,24 +105,36 @@ export const ComponentTreeHOC = (subComponents: ISubComponents) => {
   const ComponentTreeHOC = (props: IComponentTreeProps = DEFAULT_PROPS) => {
     const { SchemaTreeComponent, ContextMenuComponent } = subComponents;
     const mergedProps = Object.assign({}, DEFAULT_PROPS, props);
-    const { schemaTree, contextMenu, styles, theme } = mergedProps;
+    const { schemaTree, contextMenu, styles, theme, listVisible, onClickListOutside, onSelectListItem } = mergedProps;
+
+    const refList = React.useRef(null);
+
+    // 监听是否点击到 list 外面，因性能问题，暂时先不用这个函数
+    // const [isClickListOutside] = useClickOutside(refList, event => {
+    //   onClickListOutside && onClickListOutside(event);
+    // });
+
+    // 监听 window 大小
+    const windowSize = useWindowSize();
 
     const onSelectItem = (item: IComponentListItem)=>{
-      console.log('select item:', item);
+      onSelectListItem && onSelectListItem(item);
     }
 
+    // debugInteract(`[isClickListOutside]: ${isClickListOutside}`)
     return <ThemeProvider theme={theme}>
       <StyledContainer style={styles.container} className="ide-component-tree-container">
           <SchemaTreeComponent {...schemaTree} />
           <ContextMenuComponent {...contextMenu} />
-
-        <ComponentList list={COMP_LIST} onSelectItem={onSelectItem}/>
+        <StyledListWrap className="component-list-wrap" ref={refList} visible={listVisible} height={windowSize.innerHeight}>
+          <ComponentList list={COMP_LIST} onSelectItem={onSelectItem}/>
+        </StyledListWrap>
         </StyledContainer>
       </ThemeProvider>;
     
   };
   ComponentTreeHOC.displayName = 'ComponentTreeHOC';
-  return observer(ComponentTreeHOC);
+  return observer(based(ComponentTreeHOC));
 };
 
 export const ComponentTree = ComponentTreeHOC({

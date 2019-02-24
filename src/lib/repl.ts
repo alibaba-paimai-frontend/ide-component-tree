@@ -1,5 +1,5 @@
+import { isExist, uniq } from 'ide-lib-utils';
 import { debugError } from './debug';
-import { isExist, uniq } from './util';
 var esprima = require('esprima');
 var estraverse = require('estraverse-fb');
 

@@ -84,7 +84,6 @@ const {
 const eventsInStore = {
   onRightClick: ({ node, event }) => {
     
- 
     // 根据是否是根节点，对菜单进行不同的设置
     const isRoot = !node.parentId;
     const menuIds = ['createUp', 'createDown', 'delete'];

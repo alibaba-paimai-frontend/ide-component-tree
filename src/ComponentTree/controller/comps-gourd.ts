@@ -1,6 +1,6 @@
 import { IComponentListGroup } from 'ide-component-list';
 
-import { invariant } from '../../lib/util';
+import { invariant } from 'ide-lib-utils';
 import {
   ISchemaProps,
   genCompIdByName,

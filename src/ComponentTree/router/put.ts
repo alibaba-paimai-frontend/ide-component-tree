@@ -1,5 +1,7 @@
 import Router from 'ette-router';
 import { getEnv } from 'mobx-state-tree';
+import { updateStylesMiddleware, updateThemeMiddleware } from 'ide-lib-base-component';
+
 import { IContext } from './helper';
 export const router = new Router();
 
@@ -22,3 +24,10 @@ router.put('menu', '/menu/autoposition', async function(ctx: IContext) {
   ctx.response.body = body;
   ctx.response.status = 200;
 });
+
+
+
+// 更新 css 属性
+router.put('model', '/model/styles/:target', updateStylesMiddleware('model'));
+// 更新 theme 属性
+router.put('model', '/model/theme/:target', updateThemeMiddleware('model'));
