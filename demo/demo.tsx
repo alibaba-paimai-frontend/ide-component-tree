@@ -90,8 +90,6 @@ const eventsInStore = {
   onClickMenuItem: (key, keyPath, item) => {
     console.log('onClickMenuItem...');
 
-    // 关闭菜单
-    client.put('/clients/contextMenu/menu', { name: 'visible', value: false });
   },
   onSelectListItem:(item)=>{
     console.log('onSelectListItem...');

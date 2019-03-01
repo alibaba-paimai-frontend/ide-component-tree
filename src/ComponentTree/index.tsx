@@ -1,17 +1,16 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 // import { useClickOutside } from 'use-events';
 import useWindowSize from '@rehooks/window-size';
 
 import { pick } from 'ide-lib-utils';
-import { based, Omit, OptionalProps, IBaseTheme, IBaseStyles, IBaseComponentProps, IStoresEnv } from 'ide-lib-base-component';
+import { based, Omit, OptionalProps, IBaseTheme, IBaseComponentProps, IStoresEnv, useIndectedEvents } from 'ide-lib-base-component';
 
 import {
   ISchemaTreeProps,
   SchemaTree,
   SchemaTreeAddStore,
-  TSchemaTreeControlledKeys,
-  SchemaTreeNodeMouseEvent
+  TSchemaTreeControlledKeys
 } from 'ide-tree';
 
 
@@ -25,7 +24,7 @@ import {
 import { StyledContainer, StyledListWrap, StyledModalLayer } from './styles';
 import { ComponentList, IComponentListItem } from 'ide-component-list';
 
-import { debugRender, debugInteract } from '../lib/debug';
+import { debugRender } from '../lib/debug';
 import { StoresFactory, IStoresModel } from './schema/stores';
 import { TComponentTreeControlledKeys, CONTROLLED_KEYS } from './schema/index';
 import { AppFactory } from './controller/index';
@@ -172,29 +171,6 @@ export const ComponentTree = ComponentTreeHOC({
     以下是专门配合 store 时的组件版本
 ----------------------------------------------------- */
 
-// 要展现 list 面板的 3 种情况
-const onClickItemWithStore = (
-  storesEnv: IStoresEnv<IStoresModel>,
-  onClickItem: (...eventArgs: Parameters<IContextMenuProps['onClickItem']>) => void,
-) => (...eventArgs: Parameters<IContextMenuProps['onClickItem']>) => {
-  showComponentList(storesEnv)(...eventArgs);
-  // stores.setValue(newValue);
-  onClickItem && onClickItem(...eventArgs);
-};
-
-const onRightClickWithStore = (
-  storesEnv: IStoresEnv<IStoresModel>,
-  onRightClickNode: (options: SchemaTreeNodeMouseEvent)=>void
-) => (options: SchemaTreeNodeMouseEvent) => {
-  showContextMenu(storesEnv)(options);
-  onRightClickNode && onRightClickNode(options);
-}
-
-const onSelectListItemWithStore = (storesEnv: IStoresEnv<IStoresModel>, onSelectListItem: (item: IComponentListItem) => void) => (item: IComponentListItem) => {
-  addChildNodeByItem(storesEnv)(item);
-  onSelectListItem && onSelectListItem(item);
-}
-
 /**
  * 科里化创建 ComponentTreeWithStore 组件
  * @param stores - store 模型实例
@@ -207,26 +183,30 @@ export const ComponentTreeAddStore = (storesEnv: IStoresEnv<IStoresModel>) => {
   });
 
   const ComponentTreeWithStore = (props: Omit<IComponentTreeProps, TComponentTreeControlledKeys>) => {
-    const { schemaTree, contextMenu, onSelectListItem, ...otherProps} = props;
+    const { schemaTree, contextMenu, ...otherProps} = props;
     const { model } = stores;
     const controlledProps = pick(model, CONTROLLED_KEYS);
     debugRender(`[${stores.id}] rendering`);
 
-    const { onClickItem, ...otherContextMenuProps } = contextMenu;
-    const { onRightClickNode, ...otherSchemaTreeProps } = schemaTree;
+    const contextMenuWithInjected = useIndectedEvents<IContextMenuProps, IStoresModel>(storesEnv, contextMenu, {
+      'onClickItem': [showComponentList]
+    });
+
+    const schemaTreeWithInjected = useIndectedEvents<ISchemaTreeProps, IStoresModel>(storesEnv, schemaTree, {
+      'onRightClickNode': [showContextMenu]
+    });
+
+    const otherPropsWithInjected = useIndectedEvents<IComponentTreeProps, IStoresModel>(storesEnv, otherProps, {
+      'onSelectListItem': [addChildNodeByItem]
+    })
+
     return (
       <ComponentTreeHasSubStore
-        schemaTree={{
-          onRightClickNode: onRightClickWithStore(storesEnv, onRightClickNode),
-          ...otherSchemaTreeProps
-        }}
-        contextMenu={{
-          onClickItem: onClickItemWithStore(storesEnv, onClickItem),
-          ...otherContextMenuProps
-        }}
-        onSelectListItem={onSelectListItemWithStore(storesEnv, onSelectListItem)}
+        schemaTree={schemaTreeWithInjected}
+        contextMenu={contextMenuWithInjected}
+        // onSelectListItem={onSelectListItemWithStore(storesEnv, onSelectListItem)}
         {...controlledProps}
-        {...otherProps}
+        {...otherPropsWithInjected}
       />
     );
   };
