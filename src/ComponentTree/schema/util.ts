@@ -1,8 +1,10 @@
+import { map} from 'ss-tree';
+import { invariant } from 'ide-lib-utils';
+import { createSchemaModel } from 'ide-tree';
 import { updateInScope, BASE_CONTROLLED_KEYS } from 'ide-lib-base-component'
 import { debugModel } from '../../lib/debug';
 import { IComponentTreeProps, IComponentTreeModel, ComponentTreeModel, IStoresModel, DEFAULT_PROPS } from '../../index';
 
-import { map, NodeOrLikedOrNull} from 'ss-tree';
 
 /**
  * 将葫芦系统的 schema 转换成新版的 schema
@@ -41,6 +43,7 @@ export function createModel(modelObject: IComponentTreeProps = DEFAULT_PROPS): I
 export function createEmptyModel() {
     return createModel({});
 }
+
 
 /* ----------------------------------------------------
     更新指定 enum 中的属性

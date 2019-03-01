@@ -2,8 +2,9 @@ import * as React from 'react';
 import { render } from 'react-dom';
 import { createSchemaModel, ISchemaProps } from 'ide-tree';
 import { IMenuObject } from 'ide-context-menu';
+import { getValueByPath } from 'ide-lib-utils';
 
-import { ComponentTree, jsonConverter, ComponentTreeFactory } from '../src/index';
+import { ComponentTree, jsonConverter, ComponentTreeFactory, getSchemaByName } from '../src/index';
 
 import schemajson from './schema.json';
 
@@ -27,7 +28,7 @@ const menu: IMenuObject = {
   name: '组件树右键菜单',
   children: [
     { id: 'createSub', name: '添加组件', icon: 'plus', shortcut: '⌘+Alt+G' },
-    { id: 'createTmpl', name: '添加模板', icon: 'plus', shortcut: '' },
+    // { id: 'createTmpl', name: '添加模板', icon: 'plus', shortcut: '' },
     { id: 'createUp', name: '前面插入组件', icon: 'arrow-up', shortcut: '' },
     { id: 'createDown', name: '后面插入组件', icon: 'arrow-down', shortcut: '' },
     {
@@ -83,38 +84,18 @@ const {
 
 const eventsInStore = {
   onRightClick: ({ node, event }) => {
-    
-    // 根据是否是根节点，对菜单进行不同的设置
-    const isRoot = !node.parentId;
-    const menuIds = ['createUp', 'createDown', 'delete'];
-
-    console.log(
-      '点击节点 id：',
-      node.id,
-      `（isRoot: ${isRoot}）点击坐标 （${event.clientX}, ${event.clientY}）`
-    );
-    
-    // 如果是根节点，需要 disabled 指定的元素
-    menuIds.forEach((mid)=>{
-      client.put(`/clients/contextMenu/items/${mid}`, { name: 'disabled', value: isRoot });
-    });
-
-    // 根据事件位置，自动展现右键菜单
-    client.put('/menu/autoposition', {
-      x: event.clientX,
-      y: event.clientY
-    }); // 根据点击事件更新位置
-
+    console.log('onRightClick...');
     
   },
   onClickMenuItem: (key, keyPath, item) => {
-    console.log(`[22]当前点击项的 id: ${key}`);
+    console.log('onClickMenuItem...');
+
     // 关闭菜单
     client.put('/clients/contextMenu/menu', { name: 'visible', value: false });
   },
   onSelectListItem:(item)=>{
-    console.log('当前选中的组件：', item);
-    client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
+    console.log('onSelectListItem...');
+    
   },
   onClickListOutside: ()=>{
     // 点击到外部则隐藏

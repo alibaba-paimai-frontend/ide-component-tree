@@ -1,21 +1,20 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ThemeProvider } from 'styled-components';
 // import { useClickOutside } from 'use-events';
 import useWindowSize from '@rehooks/window-size';
 
 import { pick } from 'ide-lib-utils';
-import { based, Omit, OptionalProps, IBaseTheme, IBaseStyles, IBaseComponentProps } from 'ide-lib-base-component';
-
-
-import { StyledContainer, StyledListWrap, StyledModalLayer } from './styles';
+import { based, Omit, OptionalProps, IBaseTheme, IBaseStyles, IBaseComponentProps, IStoresEnv } from 'ide-lib-base-component';
 
 import {
   ISchemaTreeProps,
   SchemaTree,
   SchemaTreeAddStore,
-  TSchemaTreeControlledKeys
+  TSchemaTreeControlledKeys,
+  SchemaTreeNodeMouseEvent
 } from 'ide-tree';
+
+
 import {
   IContextMenuProps,
   ContextMenu,
@@ -23,13 +22,15 @@ import {
   TStoresControlledKeys as TStoresMenuControlledKeys
 } from 'ide-context-menu';
 
+import { StyledContainer, StyledListWrap, StyledModalLayer } from './styles';
 import { ComponentList, IComponentListItem } from 'ide-component-list';
 
 import { debugRender, debugInteract } from '../lib/debug';
 import { StoresFactory, IStoresModel } from './schema/stores';
 import { TComponentTreeControlledKeys, CONTROLLED_KEYS } from './schema/index';
 import { AppFactory } from './controller/index';
-import { COMP_LIST } from './controller/comps-gourd';
+import { COMP_LIST } from './schema/comps-gourd';
+import { showContextMenu, showComponentList, addChildNodeByItem } from './solution';
 
 type OptionalSchemaTreeProps = OptionalProps<
   ISchemaTreeProps,
@@ -40,9 +41,9 @@ type OptionalMenuProps = OptionalProps<
   TStoresMenuControlledKeys
 >;
 
-export interface IComponentTreeStyles extends IBaseStyles {
-  container ?: React.CSSProperties;
-}
+// export interface IComponentTreeStyles extends IBaseStyles {
+//   // container: React.CSSProperties;
+// }
 
 export interface IComponentTreeTheme extends IBaseTheme{
   main: string;
@@ -148,11 +149,12 @@ export const ComponentTreeHOC = (subComponents: ISubComponents) => {
       <SchemaTreeComponent {...schemaTree} />
       <ContextMenuComponent {...contextMenu} />
 
-      <StyledModalLayer className="modal-list" visible={listVisible} height={windowSize.innerHeight} width={windowSize.innerWidth} onClick={onClickModal(refList)}>
-          <StyledListWrap className="component-list-wrap" ref={refList} visible={listVisible} height={windowSize.innerHeight}>
-            <ComponentList list={COMP_LIST} onSelectItem={onSelectItem} />
-          </StyledListWrap>
-        </StyledModalLayer>
+      <StyledModalLayer className="modal-layer" visible={listVisible} height={windowSize.innerHeight} width={windowSize.innerWidth} onClick={onClickModal(refList)}>
+      </StyledModalLayer>
+
+      <StyledListWrap className="component-list-wrap" ref={refList} visible={listVisible} height={windowSize.innerHeight}>
+        <ComponentList list={COMP_LIST} onSelectItem={onSelectItem} />
+      </StyledListWrap>
 
     </StyledContainer>;
     
@@ -171,42 +173,58 @@ export const ComponentTree = ComponentTreeHOC({
 ----------------------------------------------------- */
 
 // 要展现 list 面板的 3 种情况
-const shouldViewList = ['createSub', 'createUp', 'createDown'];
 const onClickItemWithStore = (
-  stores: IStoresModel,
-  onClickItem: (key: string, keyPath: Array<string>, item: any) => void
-) => (key: string, keyPath: Array<string>, item: any) => {
-  if (!!~shouldViewList.indexOf(key)) {
-    stores.model.setListVisible(true);
-  }
+  storesEnv: IStoresEnv<IStoresModel>,
+  onClickItem: (...eventArgs: Parameters<IContextMenuProps['onClickItem']>) => void,
+) => (...eventArgs: Parameters<IContextMenuProps['onClickItem']>) => {
+  showComponentList(storesEnv)(...eventArgs);
   // stores.setValue(newValue);
-  onClickItem && onClickItem(key, keyPath, item);
+  onClickItem && onClickItem(...eventArgs);
 };
+
+const onRightClickWithStore = (
+  storesEnv: IStoresEnv<IStoresModel>,
+  onRightClickNode: (options: SchemaTreeNodeMouseEvent)=>void
+) => (options: SchemaTreeNodeMouseEvent) => {
+  showContextMenu(storesEnv)(options);
+  onRightClickNode && onRightClickNode(options);
+}
+
+const onSelectListItemWithStore = (storesEnv: IStoresEnv<IStoresModel>, onSelectListItem: (item: IComponentListItem) => void) => (item: IComponentListItem) => {
+  addChildNodeByItem(storesEnv)(item);
+  onSelectListItem && onSelectListItem(item);
+}
 
 /**
  * 科里化创建 ComponentTreeWithStore 组件
  * @param stores - store 模型实例
  */
-export const ComponentTreeAddStore = (stores: IStoresModel) => {
+export const ComponentTreeAddStore = (storesEnv: IStoresEnv<IStoresModel>) => {
+  const { stores } = storesEnv;
   const ComponentTreeHasSubStore = ComponentTreeHOC({
-    SchemaTreeComponent: SchemaTreeAddStore(stores.schemaTree),
+    SchemaTreeComponent: SchemaTreeAddStore(stores.schemaTree/* , extracSubEnv(env, 'schemaTree') */),
     ContextMenuComponent: ContextMenuAddStore(stores.contextMenu)
   });
 
   const ComponentTreeWithStore = (props: Omit<IComponentTreeProps, TComponentTreeControlledKeys>) => {
-    const { schemaTree, contextMenu, ...otherProps} = props;
+    const { schemaTree, contextMenu, onSelectListItem, ...otherProps} = props;
     const { model } = stores;
     const controlledProps = pick(model, CONTROLLED_KEYS);
     debugRender(`[${stores.id}] rendering`);
 
     const { onClickItem, ...otherContextMenuProps } = contextMenu;
+    const { onRightClickNode, ...otherSchemaTreeProps } = schemaTree;
     return (
       <ComponentTreeHasSubStore
-        schemaTree={schemaTree}
+        schemaTree={{
+          onRightClickNode: onRightClickWithStore(storesEnv, onRightClickNode),
+          ...otherSchemaTreeProps
+        }}
         contextMenu={{
-          onClickItem: onClickItemWithStore(stores, onClickItem),
+          onClickItem: onClickItemWithStore(storesEnv, onClickItem),
           ...otherContextMenuProps
         }}
+        onSelectListItem={onSelectListItemWithStore(storesEnv, onSelectListItem)}
         {...controlledProps}
         {...otherProps}
       />
@@ -215,17 +233,30 @@ export const ComponentTreeAddStore = (stores: IStoresModel) => {
   ComponentTreeWithStore.displayName = 'ComponentTreeWithStore';
   return observer(ComponentTreeWithStore);
 };
+
 /**
- * 工厂函数，每调用一次就获取一副 MVC
- * 用于隔离不同的 ComponentTreeWithStore 的上下文
+ * 生成 env 对象，方便在不同的状态组件中传递上下文
  */
-export const ComponentTreeFactory = () => {
+export const ComponentTreeStoresEnv = () => {
   const { stores, innerApps } = StoresFactory(); // 创建 model
   const app = AppFactory(stores, innerApps); // 创建 controller，并挂载 model
   return {
     stores,
     app,
     client: app.client,
-    ComponentTreeWithStore: ComponentTreeAddStore(stores)
+    innerApps: innerApps
   };
+}
+
+/**
+ * 工厂函数，每调用一次就获取一副 MVC
+ * 用于隔离不同的 ComponentTreeWithStore 的上下文
+ */
+export const ComponentTreeFactory = () => {
+  const storesEnv = ComponentTreeStoresEnv();
+  return {
+    ...storesEnv,
+    ComponentTreeWithStore: ComponentTreeAddStore(storesEnv)
+  }
 };
+

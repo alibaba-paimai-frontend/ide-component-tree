@@ -10,10 +10,11 @@ import { debugIO } from '../../lib/debug';
 
 export const AppFactory = function(
   stores: IStoresModel,
-  innerApps: object = {}
+  innerApps: Record<string, Application> = {}
 ) {
   const app = new Application({ domain: 'component-tree' });
-
+  app.innerApps = innerApps; // 新增 innerApps 的挂载
+  
   // 挂载 stores 到上下文中
   app.use(async (ctx: any, next) => {
     ctx.stores = stores;
