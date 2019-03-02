@@ -1,7 +1,7 @@
 import Application from 'ette';
 import { applyProxy } from 'ide-lib-base-component';
 
-import { IStoresModel } from '../schema/stores';
+import { IStoresModel, ESubApps } from '../schema/stores';
 import { router as GetRouter } from '../router/get';
 import { router as PostRouter } from '../router/post';
 import { router as PutRouter } from '../router/put';
@@ -33,11 +33,11 @@ export const AppFactory = function(
   // 进行路由代理，要放在路由挂载之前
   applyProxy(app, [
     {
-      name: 'schemaTree',
-      targets: ['tree', 'nodes', 'selection']
+      name: ESubApps.schemaTree,
+      targets: ['tree', 'nodes', 'selection', 'buffers']
     },
     {
-      name: 'contextMenu',
+      name: ESubApps.contextMenu,
       targets: ['menu', 'items']
     }
   ]);

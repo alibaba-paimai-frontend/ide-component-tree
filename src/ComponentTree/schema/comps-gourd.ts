@@ -3,9 +3,6 @@ import { IComponentListGroup } from 'ide-component-list';
 import { invariant } from 'ide-lib-utils';
 import { debugMini } from '../../lib/debug';
 
-// import { ISchemaModel } from 'ide-tree';
-
-
 declare const GOURD_WIDGET: {
   list: IComponentListGroup;
   schema: any;

@@ -3,6 +3,7 @@ import { getEnv } from 'mobx-state-tree';
 import { updateStylesMiddleware, updateThemeMiddleware } from 'ide-lib-base-component';
 
 import { IContext } from './helper';
+import { ESubApps } from '../schema/stores';
 export const router = new Router();
 
 // 更新菜单项属性
@@ -25,7 +26,10 @@ router.put('menu', '/menu/autoposition', async function(ctx: IContext) {
   const { stores, request } = ctx;
   const { data } = request;
   const { x, y } = data;
-  const { contextMenuClient } = getEnv(stores);
+  const { clients } = getEnv(stores);
+
+  const contextMenuClient = clients[ESubApps.contextMenu]; // 获取 contextMenu 的 client
+  
   const { body } = await contextMenuClient.put(`/menu/position?type=event`, {
     x,
     y

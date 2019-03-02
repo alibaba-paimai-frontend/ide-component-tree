@@ -29,7 +29,7 @@ import { StoresFactory, IStoresModel } from './schema/stores';
 import { TComponentTreeControlledKeys, CONTROLLED_KEYS } from './schema/index';
 import { AppFactory } from './controller/index';
 import { COMP_LIST } from './schema/comps-gourd';
-import { showContextMenu, showComponentList, addChildNodeByItem } from './solution';
+import { showContextMenu, showComponentList, addChildNodeByItem, actionByItem, hideMenu } from './solution';
 
 type OptionalSchemaTreeProps = OptionalProps<
   ISchemaTreeProps,
@@ -189,7 +189,7 @@ export const ComponentTreeAddStore = (storesEnv: IStoresEnv<IStoresModel>) => {
     debugRender(`[${stores.id}] rendering`);
 
     const contextMenuWithInjected = useIndectedEvents<IContextMenuProps, IStoresModel>(storesEnv, contextMenu, {
-      'onClickItem': [showComponentList]
+      'onClickItem': [showComponentList, actionByItem, hideMenu]
     });
 
     const schemaTreeWithInjected = useIndectedEvents<ISchemaTreeProps, IStoresModel>(storesEnv, schemaTree, {
@@ -198,7 +198,7 @@ export const ComponentTreeAddStore = (storesEnv: IStoresEnv<IStoresModel>) => {
 
     const otherPropsWithInjected = useIndectedEvents<IComponentTreeProps, IStoresModel>(storesEnv, otherProps, {
       'onSelectListItem': [addChildNodeByItem]
-    })
+    });
 
     return (
       <ComponentTreeHasSubStore
