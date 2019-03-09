@@ -103,8 +103,8 @@ export const DEFAULT_PROPS: IComponentTreeProps = {
  * 使用高阶组件打造的组件生成器
  * @param subComponents - 子组件列表
  */
-export const ComponentTreeHOC = (subComponents: ISubComponents) => {
-  const ComponentTreeHOC = (props: IComponentTreeProps = DEFAULT_PROPS) => {
+export const ComponentTreeHOC: (subComponents: ISubComponents) => React.FunctionComponent<IComponentTreeProps> = (subComponents) => {
+  const ComponentTreeHOC = (props: IComponentTreeProps) => {
     const { SchemaTreeComponent, ContextMenuComponent } = subComponents;
     const mergedProps = Object.assign({}, DEFAULT_PROPS, props);
     const { schemaTree, contextMenu, styles, theme, listVisible, onClickListOutside, onSelectListItem } = mergedProps;
@@ -159,7 +159,7 @@ export const ComponentTreeHOC = (subComponents: ISubComponents) => {
     
   };
   ComponentTreeHOC.displayName = 'ComponentTreeHOC';
-  return observer(based(ComponentTreeHOC));
+  return observer(based(ComponentTreeHOC, DEFAULT_PROPS));
 };
 
 export const ComponentTree = ComponentTreeHOC({
@@ -175,7 +175,7 @@ export const ComponentTree = ComponentTreeHOC({
  * 科里化创建 ComponentTreeWithStore 组件
  * @param stores - store 模型实例
  */
-export const ComponentTreeAddStore = (storesEnv: IStoresEnv<IStoresModel>) => {
+export const ComponentTreeAddStore: (storesEnv: IStoresEnv<IStoresModel>) => React.FunctionComponent<IComponentTreeProps> = (storesEnv) => {
   const { stores } = storesEnv;
   const ComponentTreeHasSubStore = ComponentTreeHOC({
     SchemaTreeComponent: SchemaTreeAddStore(stores.schemaTree/* , extracSubEnv(env, 'schemaTree') */),
