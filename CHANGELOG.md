@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.2"></a>
+## [0.1.2](https://github.com/alibaba-paimai-frontend/ide-component-tree/compare/v0.0.2...v0.1.2) (2019-03-10)
+
+
+### Bug Fixes
+
+* **类型声明:** 使用显式类型声明，解决无法导出 ComponentTree/index.d.ts 的问题；给 based 传递 DEFAULT_PROPS 参数； ([7463bad](https://github.com/alibaba-paimai-frontend/ide-component-tree/commit/7463bad))
+* **类型声明:** 解决无法导出 schema/index.d.ts 的问题，使用 IAnyModelType 类型 ([3d5b6b7](https://github.com/alibaba-paimai-frontend/ide-component-tree/commit/3d5b6b7))
+
+
+
 <a name="0.0.2"></a>
 ## 0.0.2 (2019-03-08)
 
