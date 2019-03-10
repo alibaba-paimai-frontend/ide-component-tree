@@ -80,7 +80,6 @@ function genCompListMap(compList: any) {
 }
 // 索性映射，方便后续快速通过名字检索到组件定义
 export const COMP_LIST_MAP = genCompListMap(COMP_LIST);
-console.log(999, COMP_LIST_MAP);
 
 /**
  * 根据组件名获取组件的 schema，

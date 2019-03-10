@@ -10,7 +10,7 @@ import { IComponentTreeProps, IComponentTreeModel, ComponentTreeModel, IStoresMo
  * 将葫芦系统的 schema 转换成新版的 schema
  * @param schema - 旧版 schema 
  */
-export function jsonConverter(schema: any) {
+export function jsonConverter(schema: any): any {
     return map(schema, function(node: any) {
         const newNode = Object.assign({}, node);
         newNode.name = node.name || node.component;
