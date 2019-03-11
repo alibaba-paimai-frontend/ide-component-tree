@@ -53,26 +53,26 @@ function onClickItem(key: string, keyPath: Array<string>, item: any) {
   console.log(`[11]当前点击项的 id: ${key}`);
 }
 
-render(
-  <ComponentTree
-    schemaTree={{
-      schema: schema,
-      selectedId: 'Col_1',
-      expandedIds: ['Row_1'],
-      onExpand: onExpand,
-      onSelectNode
-    }}
-    contextMenu={{
-      menu: menu,
-      visible: false,
-      width: 200,
-      left: 100,
-      top: 10,
-      onClickItem: onClickItem
-    }}
-  />,
-  document.getElementById('example') as HTMLElement
-);
+// render(
+//   <ComponentTree
+//     schemaTree={{
+//       schema: schema,
+//       selectedId: 'Col_1',
+//       expandedIds: ['Row_1'],
+//       onExpand: onExpand,
+//       onSelectNode
+//     }}
+//     contextMenu={{
+//       menu: menu,
+//       visible: false,
+//       width: 200,
+//       left: 100,
+//       top: 10,
+//       onClickItem: onClickItem
+//     }}
+//   />,
+//   document.getElementById('example') as HTMLElement
+// );
 
 // ========== with store ==============
 
@@ -121,4 +121,6 @@ render(
 
 // 创建组件树和右键菜单
 client.post('/clients/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功
-client.post('/clients/contextMenu/menu', { menu: menu });
+client.post('/clients/contextMenu/menu', { menu: menu }).then(res=>{
+  console.log(444, res)
+});

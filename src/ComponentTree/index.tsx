@@ -183,7 +183,7 @@ export const ComponentTreeAddStore: (storesEnv: IStoresEnv<IStoresModel>) => Rea
   });
 
   const ComponentTreeWithStore = (props: Omit<IComponentTreeProps, TComponentTreeControlledKeys>) => {
-    const { schemaTree, contextMenu, ...otherProps} = props;
+    const { schemaTree = {}, contextMenu = {}, ...otherProps} = props;
     const { model } = stores;
     const controlledProps = pick(model, CONTROLLED_KEYS);
     debugRender(`[${stores.id}] rendering`);
