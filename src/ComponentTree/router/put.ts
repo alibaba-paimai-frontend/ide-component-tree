@@ -1,6 +1,5 @@
 import Router from 'ette-router';
-import { getEnv } from 'mobx-state-tree';
-import { updateStylesMiddleware, updateThemeMiddleware } from 'ide-lib-base-component';
+import { updateStylesMiddleware, updateThemeMiddleware, getClientFromCtx } from 'ide-lib-base-component';
 
 import { IContext } from './helper';
 import { ESubApps } from '../schema/stores';
@@ -23,13 +22,11 @@ router.put('model', '/model', function (ctx: IContext) {
 
 // 更新菜单的位置（比如右键显示菜单等等）
 router.put('menu', '/menu/autoposition', async function(ctx: IContext) {
-  const { stores, request } = ctx;
+  const { request } = ctx;
   const { data } = request;
   const { x, y } = data;
-  const { clients } = getEnv(stores);
 
-  const contextMenuClient = clients[ESubApps.contextMenu]; // 获取 contextMenu 的 client
-  
+  const contextMenuClient = getClientFromCtx(ctx, ESubApps.contextMenu); // 获取 contextMenu 的 client
   const { body } = await contextMenuClient.put(`/menu/position?type=event`, {
     x,
     y

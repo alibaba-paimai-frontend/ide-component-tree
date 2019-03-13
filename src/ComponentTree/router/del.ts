@@ -1,5 +1,6 @@
 import Router from 'ette-router';
-import { getEnv } from 'mobx-state-tree';
+import { getClientFromCtx } from 'ide-lib-base-component';
+import { ESubApps } from '../schema/stores';
 import { IContext } from './helper';
 export const router = new Router();
 
@@ -7,7 +8,7 @@ export const router = new Router();
 // router.del('nodes', '/nodes', async function(ctx: IContext) {
 //   const { stores } = ctx;
 
-//   const { schemaTreeClient } = getEnv(stores);
+//   const schemaTreeClient = getClientFromCtx(ctx, ESubApps.schemaTree);
 //   const res = await schemaTreeClient.del('/nodes');
 //   ctx.response.body = res.body;
 //   ctx.response.status = 200;
@@ -18,7 +19,7 @@ export const router = new Router();
 //   const { stores, params } = ctx;
 //   const { id } = params;
 
-//   const { schemaTreeClient } = getEnv(stores);
+//   const schemaTreeClient = getClientFromCtx(ctx, ESubApps.schemaTree);
 //   const res = await schemaTreeClient.del(`/nodes/${id}`);
 //   ctx.response.body = res.body;
 //   ctx.response.status = 200;

@@ -75,7 +75,7 @@ export interface IComponentTreeModel extends Instance < typeof ComponentTreeMode
 /**
  * 函数模型，借此绑定该组件的多种函数
  */
-const Func = types
+const Func:IAnyModelType = types
   .model('FuncModel', {
     name: types.optional(types.string, ''),
     body: types.optional(types.string, '')

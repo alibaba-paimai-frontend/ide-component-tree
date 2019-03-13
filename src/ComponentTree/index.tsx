@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import useWindowSize from '@rehooks/window-size';
 
 import { pick } from 'ide-lib-utils';
-import { based, Omit, OptionalProps, IBaseTheme, IBaseComponentProps, IStoresEnv, useIndectedEvents } from 'ide-lib-base-component';
+import { based, Omit, OptionalProps, IBaseTheme, IBaseComponentProps, IStoresEnv, useInjectedEvents } from 'ide-lib-base-component';
 
 import {
   ISchemaTreeProps,
@@ -188,15 +188,16 @@ export const ComponentTreeAddStore: (storesEnv: IStoresEnv<IStoresModel>) => Rea
     const controlledProps = pick(model, CONTROLLED_KEYS);
     debugRender(`[${stores.id}] rendering`);
 
-    const contextMenuWithInjected = useIndectedEvents<IContextMenuProps, IStoresModel>(storesEnv, contextMenu, {
+    const contextMenuWithInjected = useInjectedEvents<IContextMenuProps, IStoresModel>(storesEnv, contextMenu, {
       'onClickItem': [showComponentList, actionByItem, hideMenu]
     });
 
-    const schemaTreeWithInjected = useIndectedEvents<ISchemaTreeProps, IStoresModel>(storesEnv, schemaTree, {
+    const schemaTreeWithInjected = useInjectedEvents<ISchemaTreeProps, IStoresModel>(storesEnv, schemaTree, {
       'onRightClickNode': [showContextMenu]
     });
+    console.log('-8888-', schemaTree );
 
-    const otherPropsWithInjected = useIndectedEvents<IComponentTreeProps, IStoresModel>(storesEnv, otherProps, {
+    const otherPropsWithInjected = useInjectedEvents<IComponentTreeProps, IStoresModel>(storesEnv, otherProps, {
       'onSelectListItem': [addChildNodeByItem]
     });
 

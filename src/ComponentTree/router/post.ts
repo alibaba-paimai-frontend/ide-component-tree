@@ -1,5 +1,6 @@
 import Router from 'ette-router';
-import { getEnv } from 'mobx-state-tree';
+import { getClientFromCtx } from 'ide-lib-base-component';
+import { ESubApps } from '../schema/stores';
 import { IContext } from './helper';
 
 export const router = new Router();
@@ -11,7 +12,7 @@ export const router = new Router();
 //   const { menu } = request.data;
 
 //   // 调用 context menu Client 的同名方法
-//   const { contextMenuClient } = getEnv(stores);
+//   const schemaTreeClient = getClientFromCtx(ctx, ESubApps.schemaTree);
 //   contextMenuClient.post('/menu', { menu: menu });
 
 //   ctx.response.status = 200;
