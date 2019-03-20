@@ -8,14 +8,15 @@ const Panel = Collapse.Panel;
 
 import {
   ComponentTree,
-  jsonConverter,
+  schemaConverter,
+  ESchemaOrigin,
   ComponentTreeFactory,
   getSchemaByName
 } from '../src/index';
 
 import schemajson from './schema.json';
 
-const convertedJSON = jsonConverter(schemajson) as ISchemaProps;
+const convertedJSON = schemaConverter(schemajson, ESchemaOrigin.GOURD_V1);
 
 const schema = createSchemaModel(convertedJSON);
 
@@ -97,7 +98,7 @@ const onModelChange = function(key: string, value: any) {
 render(
   <Collapse defaultActiveKey={['1']}>
     <Panel header="普通组件" key="0">
-       <ComponentTree
+      <ComponentTree
         schemaTree={{
           schema: schema,
           selectedId: 'Col_1',
@@ -113,15 +114,20 @@ render(
           top: 10,
           onClickItem: onClickItem
         }}
-      />,
+      />
+      ,
     </Panel>
     <Panel header="包含 store 功能" key="1">
       <ComponentTreeWithStore
         schemaTree={{
           onSelectNode: onSelectNode,
           onRightClickNode: eventsInStore.onRightClick,
-          onModelChange: function (key: string, value: any) {
-              console.log('schema tree model changed:', key, value.toJSON ? value.toJSON() : value);
+          onModelChange: function(key: string, value: any) {
+            console.log(
+              'schema tree model changed:',
+              key,
+              value.toJSON ? value.toJSON() : value
+            );
           },
           onExpand
         }}
@@ -133,8 +139,7 @@ render(
         onClickListOutside={eventsInStore.onClickListOutside}
       />
     </Panel>
-  </Collapse>
-  ,
+  </Collapse>,
   document.getElementById('example') as HTMLElement
 );
 
