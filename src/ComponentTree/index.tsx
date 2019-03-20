@@ -1,10 +1,21 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { reaction } from 'mobx';
+import { observer, useComputed, useDisposable } from 'mobx-react-lite';
 // import { useClickOutside } from 'use-events';
 import useWindowSize from '@rehooks/window-size';
 
 import { pick } from 'ide-lib-utils';
-import { based, Omit, OptionalProps, IBaseTheme, IBaseComponentProps, IStoresEnv, useInjectedEvents } from 'ide-lib-base-component';
+import {
+  addModelChangeListener,
+  based,
+  Omit,
+  OptionalProps,
+  IBaseTheme,
+  IBaseComponentProps,
+  IStoresEnv,
+  useInjectedEvents,
+  extracSubEnv
+} from 'ide-lib-base-component';
 
 import {
   ISchemaTreeProps,
@@ -12,7 +23,6 @@ import {
   SchemaTreeAddStore,
   TSchemaTreeControlledKeys
 } from 'ide-tree';
-
 
 import {
   IContextMenuProps,
@@ -24,12 +34,18 @@ import {
 import { StyledContainer, StyledListWrap, StyledModalLayer } from './styles';
 import { ComponentList, IComponentListItem } from 'ide-component-list';
 
-import { debugRender } from '../lib/debug';
+import { debugRender, debugModel } from '../lib/debug';
 import { StoresFactory, IStoresModel } from './schema/stores';
 import { TComponentTreeControlledKeys, CONTROLLED_KEYS } from './schema/index';
 import { AppFactory } from './controller/index';
 import { COMP_LIST } from './schema/comps-gourd';
-import { showContextMenu, showComponentList, addChildNodeByItem, actionByItem, hideMenu } from './solution';
+import {
+  showContextMenu,
+  showComponentList,
+  addChildNodeByItem,
+  actionByItem,
+  hideMenu
+} from './solution';
 
 type OptionalSchemaTreeProps = OptionalProps<
   ISchemaTreeProps,
@@ -44,10 +60,9 @@ type OptionalMenuProps = OptionalProps<
 //   // container: React.CSSProperties;
 // }
 
-export interface IComponentTreeTheme extends IBaseTheme{
+export interface IComponentTreeTheme extends IBaseTheme {
   main: string;
 }
-
 
 export interface IComponentTreeEvent {
   /**
@@ -55,16 +70,15 @@ export interface IComponentTreeEvent {
    */
   onClickListOutside?: (e: MouseEvent) => void;
 
-
   /**
    * 点击选择 component item 的回调
    */
   onSelectListItem?: (item: IComponentListItem) => void;
-
 }
 
-
-export interface IComponentTreeProps extends IComponentTreeEvent, IBaseComponentProps {
+export interface IComponentTreeProps
+  extends IComponentTreeEvent,
+    IBaseComponentProps {
   /**
    * schema tree 配置项
    */
@@ -75,19 +89,16 @@ export interface IComponentTreeProps extends IComponentTreeEvent, IBaseComponent
    */
   contextMenu?: OptionalMenuProps;
 
-    /**
-     * 是否显示组件列表
-     */
+  /**
+   * 是否显示组件列表
+   */
   listVisible?: boolean;
-
 }
 
 interface ISubComponents {
   SchemaTreeComponent: React.ComponentType<OptionalSchemaTreeProps>;
   ContextMenuComponent: React.ComponentType<OptionalMenuProps>;
 }
-
-
 
 export const DEFAULT_PROPS: IComponentTreeProps = {
   theme: {
@@ -103,30 +114,42 @@ export const DEFAULT_PROPS: IComponentTreeProps = {
  * 使用高阶组件打造的组件生成器
  * @param subComponents - 子组件列表
  */
-export const ComponentTreeHOC: (subComponents: ISubComponents) => React.FunctionComponent<IComponentTreeProps> = (subComponents) => {
+export const ComponentTreeHOC: (
+  subComponents: ISubComponents
+) => React.FunctionComponent<IComponentTreeProps> = subComponents => {
   const ComponentTreeHOC = (props: IComponentTreeProps) => {
     const { SchemaTreeComponent, ContextMenuComponent } = subComponents;
     const mergedProps = Object.assign({}, DEFAULT_PROPS, props);
-    const { schemaTree, contextMenu, styles, theme, listVisible, onClickListOutside, onSelectListItem } = mergedProps;
+    const {
+      schemaTree,
+      contextMenu,
+      styles,
+      listVisible,
+      onClickListOutside,
+      onSelectListItem
+    } = mergedProps;
 
     const refList = React.useRef(null);
 
     // 监听 window 大小
     const windowSize = useWindowSize();
 
-    const onSelectItem = (item: IComponentListItem)=>{
+    const onSelectItem = (item: IComponentListItem) => {
       onSelectListItem && onSelectListItem(item);
-    }
+    };
 
     // 监听是否点击到 list 外面
-    const onClickModal = (ref: React.RefObject<HTMLElement>) => (e: MouseEvent) => {
+    const onClickModal = (ref: React.RefObject<HTMLElement>) => (
+      e: MouseEvent
+    ) => {
       if (!refList) return;
       const { current } = ref;
 
       // 获取当前元素的宽、高；
       const w = current.offsetWidth;
       const h = current.offsetHeight;
-      const x = 200, y = 10; // 元素起点位置
+      const x = 200,
+        y = 10; // 元素起点位置
       const { clientX, clientY } = e; // 鼠标点击位置
 
       // 点击位置落在区域外
@@ -141,25 +164,38 @@ export const ComponentTreeHOC: (subComponents: ISubComponents) => React.Function
       if (current !== null && wasOutSide) {
         onClickListOutside(e);
       }
-    }
+    };
 
     // debugInteract(`[isClickListOutside]: ${isClickListOutside}`)
-    return <StyledContainer style={styles.container} className="ide-component-tree-container">
-      <SchemaTreeComponent {...schemaTree} />
-      <ContextMenuComponent {...contextMenu} />
+    return (
+      <StyledContainer
+        style={styles.container}
+        className="ide-component-tree-container"
+      >
+        <SchemaTreeComponent {...schemaTree} />
+        <ContextMenuComponent {...contextMenu} />
 
-      <StyledModalLayer className="modal-layer" visible={listVisible} height={windowSize.innerHeight} width={windowSize.innerWidth} onClick={onClickModal(refList)}>
-      </StyledModalLayer>
+        <StyledModalLayer
+          className="modal-layer"
+          visible={listVisible}
+          height={windowSize.innerHeight}
+          width={windowSize.innerWidth}
+          onClick={onClickModal(refList)}
+        />
 
-      <StyledListWrap className="component-list-wrap" ref={refList} visible={listVisible} height={windowSize.innerHeight}>
-        <ComponentList list={COMP_LIST} onSelectItem={onSelectItem} />
-      </StyledListWrap>
-
-    </StyledContainer>;
-    
+        <StyledListWrap
+          className="component-list-wrap"
+          ref={refList}
+          visible={listVisible}
+          height={windowSize.innerHeight}
+        >
+          <ComponentList list={COMP_LIST} onSelectItem={onSelectItem} />
+        </StyledListWrap>
+      </StyledContainer>
+    );
   };
   ComponentTreeHOC.displayName = 'ComponentTreeHOC';
-  return observer(based(ComponentTreeHOC, DEFAULT_PROPS));
+  return observer(based(observer(ComponentTreeHOC), DEFAULT_PROPS));
 };
 
 export const ComponentTree = ComponentTreeHOC({
@@ -175,31 +211,52 @@ export const ComponentTree = ComponentTreeHOC({
  * 科里化创建 ComponentTreeWithStore 组件
  * @param stores - store 模型实例
  */
-export const ComponentTreeAddStore: (storesEnv: IStoresEnv<IStoresModel>) => React.FunctionComponent<IComponentTreeProps> = (storesEnv) => {
+export const ComponentTreeAddStore: (
+  storesEnv: IStoresEnv<IStoresModel>
+) => React.FunctionComponent<IComponentTreeProps> = storesEnv => {
   const { stores } = storesEnv;
   const ComponentTreeHasSubStore = ComponentTreeHOC({
-    SchemaTreeComponent: SchemaTreeAddStore(stores.schemaTree/* , extracSubEnv(env, 'schemaTree') */),
+    SchemaTreeComponent: SchemaTreeAddStore(
+      extracSubEnv(storesEnv, 'schemaTree')
+    ),
     ContextMenuComponent: ContextMenuAddStore(stores.contextMenu)
   });
 
-  const ComponentTreeWithStore = (props: Omit<IComponentTreeProps, TComponentTreeControlledKeys>) => {
-    const { schemaTree = {}, contextMenu = {}, ...otherProps} = props;
+  const ComponentTreeWithStore = (
+    props: Omit<IComponentTreeProps, TComponentTreeControlledKeys>
+  ) => {
+    const { schemaTree = {}, contextMenu = {}, ...otherProps } = props;
     const { model } = stores;
+    // const controlledProps = useComputed(() => pick(model, CONTROLLED_KEYS), CONTROLLED_KEYS.map(o=>model[o]));
     const controlledProps = pick(model, CONTROLLED_KEYS);
     debugRender(`[${stores.id}] rendering`);
 
-    const contextMenuWithInjected = useInjectedEvents<IContextMenuProps, IStoresModel>(storesEnv, contextMenu, {
-      'onClickItem': [showComponentList, actionByItem, hideMenu]
+    const contextMenuWithInjected = useInjectedEvents<
+      IContextMenuProps,
+      IStoresModel
+    >(storesEnv, contextMenu, {
+      onClickItem: [showComponentList, actionByItem, hideMenu]
     });
 
-    const schemaTreeWithInjected = useInjectedEvents<ISchemaTreeProps, IStoresModel>(storesEnv, schemaTree, {
-      'onRightClickNode': [showContextMenu]
+    const schemaTreeWithInjected = useInjectedEvents<
+      ISchemaTreeProps,
+      IStoresModel
+    >(storesEnv, schemaTree, {
+      onRightClickNode: [showContextMenu]
     });
-    console.log('-8888-', schemaTree );
 
-    const otherPropsWithInjected = useInjectedEvents<IComponentTreeProps, IStoresModel>(storesEnv, otherProps, {
-      'onSelectListItem': [addChildNodeByItem]
+    const otherPropsWithInjected = useInjectedEvents<
+      IComponentTreeProps,
+      IStoresModel
+    >(storesEnv, otherProps, {
+      onSelectListItem: [addChildNodeByItem]
     });
+
+    addModelChangeListener(
+      model,
+      CONTROLLED_KEYS,
+      otherPropsWithInjected.onModelChange
+    );
 
     return (
       <ComponentTreeHasSubStore
@@ -227,7 +284,7 @@ export const ComponentTreeStoresEnv = () => {
     client: app.client,
     innerApps: innerApps
   };
-}
+};
 
 /**
  * 工厂函数，每调用一次就获取一副 MVC
@@ -238,6 +295,5 @@ export const ComponentTreeFactory = () => {
   return {
     ...storesEnv,
     ComponentTreeWithStore: ComponentTreeAddStore(storesEnv)
-  }
+  };
 };
-
