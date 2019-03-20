@@ -82,8 +82,8 @@ const eventsInStore = {
   onClickListOutside: () => {
     // 点击到外部则隐藏
     console.log('click outside list');
-    client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
-    client.put('/model/theme/main', { value: '#ccc' });
+    // client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
+    // client.put('/model/theme/main', { value: '#ccc' });
   }
 };
 

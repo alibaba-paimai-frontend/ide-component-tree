@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { reaction } from 'mobx';
 import { observer, useComputed, useDisposable } from 'mobx-react-lite';
 // import { useClickOutside } from 'use-events';
@@ -44,7 +44,8 @@ import {
   showComponentList,
   addChildNodeByItem,
   actionByItem,
-  hideMenu
+  hideMenu,
+  hideList
 } from './solution';
 
 type OptionalSchemaTreeProps = OptionalProps<
@@ -134,37 +135,41 @@ export const ComponentTreeHOC: (
     // 监听 window 大小
     const windowSize = useWindowSize();
 
-    const onSelectItem = (item: IComponentListItem) => {
-      onSelectListItem && onSelectListItem(item);
-    };
+    const onSelectItem = useCallback(
+      (item: IComponentListItem) => {
+        onSelectListItem && onSelectListItem(item);
+      },
+      [onSelectListItem]
+    );
 
     // 监听是否点击到 list 外面
-    const onClickModal = (ref: React.RefObject<HTMLElement>) => (
-      e: MouseEvent
-    ) => {
-      if (!refList) return;
-      const { current } = ref;
+    const onClickModal = useCallback(
+      (ref: React.RefObject<HTMLElement>) => (e: MouseEvent) => {
+        if (!refList) return;
+        const { current } = ref;
 
-      // 获取当前元素的宽、高；
-      const w = current.offsetWidth;
-      const h = current.offsetHeight;
-      const x = 200,
-        y = 10; // 元素起点位置
-      const { clientX, clientY } = e; // 鼠标点击位置
+        // 获取当前元素的宽、高；
+        const w = current.offsetWidth;
+        const h = current.offsetHeight;
+        const x = 200,
+          y = 10; // 元素起点位置
+        const { clientX, clientY } = e; // 鼠标点击位置
 
-      // 点击位置落在区域外
-      const wasOutSide = !(
-        clientX > x &&
-        clientX < x + w &&
-        clientY > y &&
-        clientY < y + h
-      );
+        // 点击位置落在区域外
+        const wasOutSide = !(
+          clientX > x &&
+          clientX < x + w &&
+          clientY > y &&
+          clientY < y + h
+        );
 
-      // const containedTarget = current.contains(e.target as HTMLElement);
-      if (current !== null && wasOutSide) {
-        onClickListOutside(e);
-      }
-    };
+        // const containedTarget = current.contains(e.target as HTMLElement);
+        if (current !== null && wasOutSide && onClickListOutside) {
+          onClickListOutside(e);
+        }
+      },
+      [onClickListOutside]
+    );
 
     // debugInteract(`[isClickListOutside]: ${isClickListOutside}`)
     return (
@@ -249,7 +254,8 @@ export const ComponentTreeAddStore: (
       IComponentTreeProps,
       IStoresModel
     >(storesEnv, otherProps, {
-      onSelectListItem: [addChildNodeByItem]
+      onSelectListItem: [addChildNodeByItem],
+      onClickListOutside: [hideList]
     });
 
     addModelChangeListener(
