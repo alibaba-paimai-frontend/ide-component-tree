@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.3"></a>
+## [0.1.3](https://github.com/alibaba-paimai-frontend/ide-component-tree/compare/v0.1.2...v0.1.3) (2019-03-21)
+
+
+### Bug Fixes
+
+* **修复: 方法调用:** 因 mst 提供的 getEnv 方法是获取全局环境的，因此改用 getClientFromCtx 方法来获取子 client ([d59cf8d](https://github.com/alibaba-paimai-frontend/ide-component-tree/commit/d59cf8d))
+* **方法修复: onClickListOutside:** 添加到 solution 中，并做存在性判断 ([e4050d7](https://github.com/alibaba-paimai-frontend/ide-component-tree/commit/e4050d7))
+
+
+### Features
+
+* **功能新增: 函数:** 新增 schemaConverter 方法，方便后续扩展多种场景的 schema 转换 ([c962717](https://github.com/alibaba-paimai-frontend/ide-component-tree/commit/c962717))
+* **功能新增: 组件:** 新增 addModelChangeListener 方法，监听组件的 model 更新 ([1ec82b9](https://github.com/alibaba-paimai-frontend/ide-component-tree/commit/1ec82b9))
+
+
+
 <a name="0.1.2"></a>
 ## [0.1.2](https://github.com/alibaba-paimai-frontend/ide-component-tree/compare/v0.0.2...v0.1.2) (2019-03-10)
 
