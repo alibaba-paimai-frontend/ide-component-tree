@@ -36,7 +36,7 @@ export const addChildNodeByItem = (env: IStoresEnv<IStoresModel>) => (item: ICom
 
     // 根据组件名，获取 schema 对象
     const schema = getSchemaByName(item.name); // 根据组件名获取组件 schema
-    // console.log('生成的 schema 对象', schema);
+    console.log('生成的 schema 对象', schema);
 
     const selectedNodeId = schemaTreeStore.model.selectedId;
 

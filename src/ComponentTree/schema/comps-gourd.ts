@@ -9,10 +9,7 @@ declare const GOURD_WIDGET: {
 };
 
 // 公共组件列表
-invariant(
-  !!GOURD_WIDGET.list,
-  '不存在变量名为 GOURD_WIDGET 的公共组件列表'
-);
+invariant(!!GOURD_WIDGET.list, '不存在变量名为 GOURD_WIDGET 的公共组件列表');
 interface IComponentInfo {
   name?: string;
   icon?: string;
@@ -49,7 +46,7 @@ function genCompListMap(compList: any) {
       result[compName].children = result[compName].children.map((o: any) => {
         o.name = o.component;
         return o;
-      })
+      });
     }
 
     // 因为比较耗时，所以异步操作
@@ -73,13 +70,13 @@ function genCompListMap(compList: any) {
         }
       }
     }, 0);
-
   });
 
   return result;
 }
 // 索性映射，方便后续快速通过名字检索到组件定义
 export const COMP_LIST_MAP = genCompListMap(COMP_LIST);
+console.log('888', COMP_LIST_MAP);
 
 /**
  * 根据组件名获取组件的 schema，
@@ -99,9 +96,13 @@ export function getSchemaByName(name: string) {
   const compFromList = COMP_LIST_MAP[name];
   if (compFromList) {
     if (compFromList.props || compFromList.defaults) {
-      schema.props = Object.assign({}, compFromList.props, compFromList.defaults);
+      schema.props = Object.assign(
+        {},
+        compFromList.props,
+        compFromList.defaults
+      );
     }
   }
-  debugMini(`[getSchemaByName] 根据 name 生成的 schema 对象: %o`, schema)
+  debugMini(`[getSchemaByName] 根据 name 生成的 schema 对象: %o`, schema);
   return schema;
 }

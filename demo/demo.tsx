@@ -14,7 +14,7 @@ import {
   getSchemaByName
 } from '../src/index';
 
-import schemajson from './schema.json';
+import schemajson from './schema.ts';
 
 const convertedJSON = schemaConverter(schemajson, ESchemaOrigin.GOURD_V1);
 
@@ -146,5 +146,5 @@ render(
 // 创建组件树和右键菜单
 client.post('/clients/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功
 client.post('/clients/contextMenu/menu', { menu: menu }).then(res => {
-  console.log(444, res);
+  // console.log(444, res);
 });

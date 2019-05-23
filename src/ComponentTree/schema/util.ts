@@ -31,7 +31,7 @@ export function jsonConverter(schema: any): any {
 // 默认节点转换函数
 export const DEFAULT_CONVERTER = function(node: any) {
   const newNode = Object.assign({}, node);
-  newNode.name = node.name || node.component;
+  newNode.name = node.name || (node.component && node.component.name);
   newNode.screenId = node.screenId || node.id;
   return newNode;
 };
