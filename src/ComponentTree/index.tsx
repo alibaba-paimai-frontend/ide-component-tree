@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { Button } from 'antd';
 import {
   IBaseTheme,
   IBaseComponentProps,
@@ -11,7 +10,7 @@ import { IContextMenuProps } from 'ide-context-menu';
 
 import useWindowSize from '@rehooks/window-size';
 
-import { StyledContainer, StyledListWrap, StyledModalLayer } from './styles';
+import { StyledContainer, StyledListWrap } from './styles';
 import { debugRender, debugModel } from '../lib/debug';
 import { ISubProps } from './subs';
 
@@ -129,7 +128,6 @@ export const ComponentTreeCurrying: TComponentCurrying<
     >
       <SchemaTreeComponent {...schemaTree} />
 
-      {/* <ContextMenuComponent {...contextMenu} /> */}
       <ContextMenuWithClickOutside
         onClick={onOutsideContextMenu}
         visible={menuModalVisible}
@@ -137,15 +135,6 @@ export const ComponentTreeCurrying: TComponentCurrying<
         bgColor={'rgba(0,0,0, 0)'}
         contentProps={contextMenu}
       />
-      {/* 
-      <StyledListWrap
-        className="component-list-wrap"
-        ref={refList}
-        visible={listVisible}
-        height={windowSize.innerHeight}
-      >
-        <ComponentList {...comList} />
-      </StyledListWrap> */}
 
       <ComponentListWithClickOutside
         onClick={onOutsideListPanel}

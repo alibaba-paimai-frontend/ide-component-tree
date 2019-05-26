@@ -29,11 +29,14 @@ import {
 } from 'ide-component-list';
 
 import {
-  showContextMenu,
   showComponentList,
   actionByItem,
   hideMenuWhenListShow
-} from './solution';
+} from './solution/contextMenu';
+
+import {
+  showContextMenu
+} from './solution/schemaTree'
 import {
   addChildNodeByItem,
 } from './solution/comList'

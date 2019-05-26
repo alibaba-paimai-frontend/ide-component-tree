@@ -1,6 +1,5 @@
 import Router from 'ette-router';
 import { 
-  getInnerAppsMiddleware, 
   buildNormalResponse } from 'ide-lib-base-component';
 
 

@@ -28,16 +28,3 @@ export const StyledListWrap = styled.div.attrs({
 `;
 
 
-export const StyledModalLayer = styled.div.attrs({
-  style: (props: IStyledProps) => props.style || {}  // 优先级会高一些，行内样式
-}) <IStyledProps>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 98;
-  display: ${(props: IStyledProps) => (props.visible ? 'block' : 'none')};
-  height: ${(props: IStyledProps) => (props.height ? `${props.height}px` : 'auto')};
-  width: ${(props: IStyledProps) => (props.width ? `${props.width}px` : 'auto')};
-  background-color: ${(props: IStyledProps) => (props.color ? `${props.color}` : 'auto')};
-`;
-

@@ -3,7 +3,7 @@ import { BASE_CONTROLLED_KEYS } from 'ide-lib-base-component';
 
 import { IStoresModel, IModuleConfig } from 'ide-lib-engine';
 import { DEFAULT_PROPS, IComponentTreeProps } from '.';
-import { hideList, hideContextMenu } from './solution';
+import { hideList, hideContextMenu } from './solution/model';
 
 import { subComponents, ISubProps } from './subs';
 

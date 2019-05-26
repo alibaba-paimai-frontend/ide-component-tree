@@ -13,6 +13,7 @@ import { ESubAppNames } from '../../subs';
 import { ROUTER_MAP } from '../../router/helper';
 
 import { message } from 'antd';
+import { debugInteract } from '../../../lib/debug';
 
 const getSchemaByItem = function(item: IComponentListItem) {
   const { name } = item;
@@ -44,12 +45,12 @@ export const addChildNodeByItem = (env: IStoresEnv<IStoresModel>) => async (
 
   const clickedMenuKey = contextMenuStore.model.selectedKey; // 获取被点击的右键菜单 key 值
 
-  console.log('当前选中的组件：', item, clickedMenuKey);
+  debugInteract('当前选中的组件：', item, clickedMenuKey);
   client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
 
   // 根据组件名，获取 schema 对象
   const schema = getSchemaByItem(item); // 根据组件名获取组件 schema
-  console.log('生成的 schema 对象', schema);
+  debugInteract('生成的 schema 对象', schema);
 
   const selectedNodeId = schemaTreeStore.model.selectedId;
 

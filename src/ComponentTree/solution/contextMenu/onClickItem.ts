@@ -65,7 +65,6 @@ export const actionByItem = (env: IStoresEnv<IStoresModel>) => async (
         `${ROUTER_MAP.schemaTree}/nodes/${selectedNodeId}/children`,
         { useBuffer: true }
       );
-      // console.log(111, resPaste);
       if (!hasEtteException(resPaste, ['schemaTree', 'paste', 'buffer'])) {
         const resultNode = getValueByPath(resPaste, 'body.data.node');
         if (!!resultNode) {
