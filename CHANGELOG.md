@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [0.2.0](https://github.com/one-gourd/ide-component-tree/compare/v0.1.3...v0.2.0) (2019-05-26)
+
+
+### Features
+
+* 🎸 架构升级: 使用 engine 架构 ([cfb538a](https://github.com/one-gourd/ide-component-tree/commit/cfb538a))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/alibaba-paimai-frontend/ide-component-tree/compare/v0.1.2...v0.1.3) (2019-03-21)
 
