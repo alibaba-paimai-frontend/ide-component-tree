@@ -9,7 +9,7 @@ const commontConfig = {
   node: {
     fs: 'empty'
   },
-  externals: getExternal(['ss-tree'], false),
+  externals: getExternal(["ss-tree"]),
   module: {
     rules: [
       {

@@ -3,19 +3,18 @@ const common = require('./webpack.common.js');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+
 const path = require('path');
 const { getExternal } = require('./webpack-helper');
 
-const targetDir = 'dist';
-
-const isDebug = process.env.DEBUG === 'true'
+const targetDir = 'public';
 
 module.exports = common.map(config => {
-  /* 这份配置是用于引入到浏览器中时候用的
-     比如 https://unpkg.com/ide-component-tree@0.1.3/dist/index.umd.js
-  */
+  /* 这份配置是用于发布 demo 到 gh-pages 分支使用的  */
   return merge(config, {
-    entry: './src/index.tsx',
+    entry: './demo/demo.tsx',
     externals: getExternal(["ss-tree"], true),
     mode: 'production',
     devtool: 'source-map',
@@ -24,21 +23,22 @@ module.exports = common.map(config => {
     },
     plugins: [
       new CleanWebpackPlugin(targetDir),
+      new HtmlWebpackPlugin({
+        title: 'demo 页面',
+        excludeChunks: ['index', 'index.js'],
+        // Load a custom template (lodash by default)
+        template: 'demo/index.html'
+      }),
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production')
-      })
+      }),
     ],
     output: {
-      filename: 'index.umd.js',
+      filename: 'demo.js',
+      path: path.resolve(__dirname, targetDir),
       libraryTarget: 'umd',
-      library: 'ideComponentTree',
-      path: path.resolve(__dirname, 'dist'),
+      library: 'ideComponentTreeDemo',
       umdNamedDefine: true
     }
-  }, isDebug ? {
-    mode: 'development',
-    devtool: 'inline-source-map', optimization: {}, plugins: [
-      new CleanWebpackPlugin(targetDir)
-    ]
-  } : {});
+  });
 });

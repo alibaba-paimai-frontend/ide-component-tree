@@ -1,32 +1,39 @@
 import Router from 'ette-router';
-import { updateStylesMiddleware, updateThemeMiddleware, getClientFromCtx } from 'ide-lib-base-component';
+import {
+  updateStylesMiddleware,
+  updateThemeMiddleware,
+  buildNormalResponse,
+  getClientFromCtx
+} from 'ide-lib-base-component';
 
 import { IContext } from './helper';
-import { ESubApps } from '../schema/stores';
-export const router = new Router();
 
-// 更新菜单项属性
-router.put('model', '/model', function (ctx: IContext) {
+import { ESubAppNames } from '../subs';
+
+export const router = new Router();
+// 更新单项属性
+router.put('updateModel', '/model', function(ctx: IContext) {
   const { stores, request } = ctx;
   const { name, value } = request.data;
 
   //   stores.setSchema(createSchemaModel(schema));
+  const originValue = stores.model[name];
   const isSuccess = stores.model.updateAttribute(name, value);
-  ctx.response.body = {
-    success: isSuccess
-  };
 
-  ctx.response.status = 200;
+  buildNormalResponse(
+    ctx,
+    200,
+    { success: isSuccess, origin: originValue },
+    `属性 ${name} 的值从 ${originValue} -> ${value} 的变更: ${isSuccess}`
+  );
 });
 
-
-// 更新菜单的位置（比如右键显示菜单等等）
+// TODO: 更新菜单的位置（比如右键显示菜单等等）
 router.put('menu', '/menu/autoposition', async function(ctx: IContext) {
   const { request } = ctx;
   const { data } = request;
   const { x, y } = data;
-
-  const contextMenuClient = getClientFromCtx(ctx, ESubApps.contextMenu); // 获取 contextMenu 的 client
+  const contextMenuClient = getClientFromCtx(ctx, ESubAppNames.contextMenu); // 获取 contextMenu 的 client
   const { body } = await contextMenuClient.put(`/menu/position?type=event`, {
     x,
     y
@@ -41,9 +48,16 @@ router.put('menu', '/menu/autoposition', async function(ctx: IContext) {
   ctx.response.status = 200;
 });
 
-
-
 // 更新 css 属性
-router.put('model', '/model/styles/:target', updateStylesMiddleware('model'));
+router.put(
+  'updateStyles',
+  '/model/styles/:target',
+  updateStylesMiddleware('model')
+);
+
 // 更新 theme 属性
-router.put('model', '/model/theme/:target', updateThemeMiddleware('model'));
+router.put(
+  'updateTheme',
+  '/model/theme/:target',
+  updateThemeMiddleware('model')
+);

@@ -1,19 +1,19 @@
 import Router from 'ette-router';
-import { getClientFromCtx } from 'ide-lib-base-component';
-import { ESubApps } from '../schema/stores';
+import { buildNormalResponse } from 'ide-lib-base-component';
+import { createModel } from 'ide-lib-engine';
+
 import { IContext } from './helper';
+import { ComponentTreeModel } from '../../index';
+
 
 export const router = new Router();
 
+// 创新新的 model 
+router.post('createModel', '/model', function (ctx: IContext) {
+  const { stores, request } = ctx;
+  const { model } = request.data;
 
-// // 创建新的菜单
-// router.post('menu', '/menu', function(ctx: IContext) {
-//   const { stores, request } = ctx;
-//   const { menu } = request.data;
+  stores.setModel(createModel(ComponentTreeModel, model));
 
-//   // 调用 context menu Client 的同名方法
-//   const schemaTreeClient = getClientFromCtx(ctx, ESubApps.schemaTree);
-//   contextMenuClient.post('/menu', { menu: menu });
-
-//   ctx.response.status = 200;
-// });
+  buildNormalResponse(ctx, 200, { success: true });
+});

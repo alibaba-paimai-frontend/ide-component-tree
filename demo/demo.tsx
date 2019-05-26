@@ -1,22 +1,34 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-import { createSchemaModel, ISchemaProps } from 'ide-tree';
-import { IMenuObject } from 'ide-context-menu';
-import { getValueByPath } from 'ide-lib-utils';
 import { Collapse } from 'antd';
 const Panel = Collapse.Panel;
 
+import { createSchemaModel } from 'ide-tree';
+import { IMenuObject } from 'ide-context-menu';
+
 import {
   ComponentTree,
-  schemaConverter,
-  ESchemaOrigin,
   ComponentTreeFactory,
-  getSchemaByName
-} from '../src/index';
+  IComponentTreeProps,
+  ESchemaOrigin,
+  schemaConverter
+} from '../src/';
+const {
+  ComponentWithStore: ComponentTreeWithStore,
+  client
+} = ComponentTreeFactory();
 
-import schemajson from './schema.ts';
+import schemajson from './schema';
+import COMP_LIST from './list.json';
+import newCompList from './comp-list';
 
-const convertedJSON = schemaConverter(schemajson, ESchemaOrigin.GOURD_V1);
+/**
+ * schema tree 部分
+ */
+
+// 新版 json 转换
+const convertedJSON = schemaConverter(schemajson, ESchemaOrigin.GOURD_V2);
+// console.log(777, schemajson, convertedJSON);
 
 const schema = createSchemaModel(convertedJSON);
 
@@ -26,6 +38,10 @@ const onExpand = function(keys) {
 
 const onSelectNode = node => {
   console.log('当前选中的 node:', node.id, node.name);
+};
+
+const onRightClickNode = ({ node, event }) => {
+  console.log('onRightClickNode...');
 };
 
 /**
@@ -66,32 +82,24 @@ function onClickItem(key: string, keyPath: Array<string>, item: any) {
   console.log(`[11]当前点击项的 id: ${key}`);
 }
 
-// ========== with store ==============
+/**
+ * component list 部分
+ */
 
-const { ComponentTreeWithStore, client } = ComponentTreeFactory();
-
-const eventsInStore = {
-  onRightClick: ({ node, event }) => {
-    console.log('onRightClick...');
-  },
-  onClickMenuItem: (key, keyPath, item) => {
-    console.log('onClickMenuItem...');
-  },
-  onSelectListItem: item => {
-    console.log('onSelectListItem...');
-  },
-  onClickListOutside: () => {
-    // 点击到外部则隐藏
-    console.log('click outside list');
-    // client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
-    // client.put('/model/theme/main', { value: '#ccc' });
-  }
+const onSelectListItem = item => {
+  console.log('onSelectListItem...');
 };
+
+const onOutsideListPanel = (e: MouseEvent, isOutSide: boolean) => {
+  console.log('detect click list panel:', isOutSide, e);
+};
+
+// =============
 
 // 当 store 有变更的时候，调用该方法
 // 作用：增删改 shema 的时候，通知外界什么出现了变更
 // 机理：监听 mst 的变更
-const onModelChange = function(key: string, value: any) {
+const onComponentTreeChange = function(key: string, value: any) {
   console.log('model changed', key, value);
 };
 
@@ -114,14 +122,17 @@ render(
           top: 10,
           onClickItem: onClickItem
         }}
+        comList={{
+          visible: true,
+          list: COMP_LIST
+        }}
       />
-      ,
     </Panel>
     <Panel header="包含 store 功能" key="1">
       <ComponentTreeWithStore
         schemaTree={{
           onSelectNode: onSelectNode,
-          onRightClickNode: eventsInStore.onRightClick,
+          onRightClickNode: onRightClickNode,
           onModelChange: function(key: string, value: any) {
             console.log(
               'schema tree model changed:',
@@ -132,11 +143,11 @@ render(
           onExpand
         }}
         contextMenu={{
-          onClickItem: eventsInStore.onClickMenuItem
+          onClickItem: onClickItem
         }}
-        onModelChange={onModelChange}
-        onSelectListItem={eventsInStore.onSelectListItem}
-        onClickListOutside={eventsInStore.onClickListOutside}
+        onModelChange={onComponentTreeChange}
+        onSelectListItem={onSelectListItem}
+        onOutsideListPanel={onOutsideListPanel}
       />
     </Panel>
   </Collapse>,
@@ -144,7 +155,7 @@ render(
 );
 
 // 创建组件树和右键菜单
-client.post('/clients/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功
-client.post('/clients/contextMenu/menu', { menu: menu }).then(res => {
-  // console.log(444, res);
-});
+client.post('/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功
+client.post('/contextMenu/menu', { menu: menu });
+client.put('/comList/model', { name: 'visible', value: false });
+client.put('/comList/model', { name: 'list', value: newCompList });

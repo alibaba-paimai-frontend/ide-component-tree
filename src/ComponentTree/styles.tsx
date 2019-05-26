@@ -4,16 +4,16 @@ import { IBaseStyledProps } from 'ide-lib-base-component';
 import { IComponentTreeProps } from '../index';
 
 
-interface IStyledProps extends IComponentTreeProps, IBaseStyledProps {}
+interface IStyledProps extends IComponentTreeProps, IBaseStyledProps { }
 
 export const StyledContainer = styled.div.attrs({
   style: (props: IStyledProps) => props.style || {}  // 优先级会高一些，行内样式
-})`
+})<IStyledProps>`
 `;
 
 export const StyledListWrap = styled.div.attrs({
   style: (props: IStyledProps) => props.style || {}  // 优先级会高一些，行内样式
-})`
+})<IStyledProps>`
   position: fixed;
   top: 10px;
   left: 200px;
@@ -30,7 +30,7 @@ export const StyledListWrap = styled.div.attrs({
 
 export const StyledModalLayer = styled.div.attrs({
   style: (props: IStyledProps) => props.style || {}  // 优先级会高一些，行内样式
-})`
+}) <IStyledProps>`
   position: fixed;
   top: 0;
   left: 0;
