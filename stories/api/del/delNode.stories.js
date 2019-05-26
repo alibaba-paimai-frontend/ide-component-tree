@@ -8,7 +8,10 @@ import { ComponentTreeFactory } from '../../../src';
 import { treegen } from '../../helper';
 // const { ComponentTreeWithStore, client } = ComponentTreeFactory();
 
-const { ComponentTreeWithStore, client } = ComponentTreeFactory();
+const {
+  ComponentWithStore: ComponentTreeWithStore,
+  client
+} = ComponentTreeFactory();
 
 const styles = {
   demoWrap: {
@@ -37,7 +40,7 @@ function removeNodeById() {
   client.del(`/clients/schemaTree/nodes/${id}`).then(res => {
     const { status, body } = res;
     if (status === 200) {
-      const node = body.node || {};
+      const node = body.data.node || {};
       document.getElementById('info').innerText =
         `被删除节点信息：\n` + JSON.stringify(node, null, 4);
       // 同时选中父节点
@@ -45,6 +48,7 @@ function removeNodeById() {
     }
   });
 }
+ client.put(`/clients/comList/model`, {name: 'visible', value: false});
 storiesOf('API - del', module)
   .addParameters(wInfo(mdDelNode))
   .addWithJSX('节点：/nodes/:id 移除指定节点', () => {

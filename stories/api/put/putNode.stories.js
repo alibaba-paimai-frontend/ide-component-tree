@@ -8,7 +8,10 @@ import { ComponentTreeFactory } from '../../../src';
 import { treegen } from '../../helper';
 // const { ComponentTreeWithStore, client } = ComponentTreeFactory();
 
-const { ComponentTreeWithStore, client } = ComponentTreeFactory();
+const {
+  ComponentWithStore: ComponentTreeWithStore,
+  client
+} = ComponentTreeFactory();
 
 const { Option } = Select;
 const styles = {
@@ -79,6 +82,8 @@ function updateById() {
         `更新失败： \n` + JSON.stringify(err, null, 4);
     });
 }
+client.put(`/clients/comList/model`, { name: 'visible', value: false });
+
 storiesOf('API - put', module)
   .addParameters(wInfo(mdPutNode))
   .addWithJSX('节点：/nodes/:id 更改节点信息', () => {

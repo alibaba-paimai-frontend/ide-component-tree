@@ -8,11 +8,11 @@ import { ComponentTreeFactory } from '../../../src';
 import { treegen, menuGen } from '../../helper';
 
 const {
-  ComponentTreeWithStore: ComponentTreeWithStore1,
+  ComponentWithStore: ComponentTreeWithStore1,
   client: client1
 } = ComponentTreeFactory();
 const {
-  ComponentTreeWithStore: ComponentTreeWithStore2,
+  ComponentWithStore: ComponentTreeWithStore2,
   client: client2
 } = ComponentTreeFactory();
 
@@ -80,6 +80,9 @@ const onClickItem = client => (key, keyPath, item) => {
   // 关闭菜单
   client.put('/clients/contextMenu/menu', { name: 'visible', value: false });
 };
+
+client1.put(`/clients/comList/model`, { name: 'visible', value: false });
+client2.put(`/clients/comList/model`, { name: 'visible', value: false });
 
 storiesOf('API - get', module)
   .addParameters(wInfo(mdGetNode))

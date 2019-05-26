@@ -2,8 +2,11 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { wInfo } from '../../.storybook/utils';
 
+import { createModel } from 'ide-lib-engine';
+
 import { createSchemaModel } from 'ide-tree';
-import { createMenuModel } from 'ide-context-menu';
+
+import { ContextMenuModel } from 'ide-context-menu';
 import { ComponentTree } from '../../src/';
 
 import mdMobx from './simple-mobx.md';
@@ -47,29 +50,31 @@ function onClickItem(key, keyPath, item) {
   console.log(`当前点击项的 id: ${key}`);
 }
 
-const menuModel = createMenuModel({
-  id: 'component-tree',
-  name: '组件树右键菜单',
-  children: [
-    { id: 'newFile', name: '创建新页面', icon: 'file' },
-    { id: 'copy', name: '复制', icon: 'copy', shortcut: '⌘+C' },
-    {
-      id: 'paste',
-      name: '粘贴',
-      icon: 'switcher',
-      shortcut: '⌘+V',
-      disabled: true
-    },
-    {
-      id: 'divider',
-      name: '分割线',
-      icon: 'file',
-      type: 'separator'
-    },
-    { id: 'preview', name: '预览', icon: 'eye' },
-    { id: 'delete', name: '删除', icon: 'delete', shortcut: '⌘+Delete' }
-  ]
-});
+const menuModel = createModel(ContextMenuModel, {
+  menu: {
+    id: 'component-tree',
+    name: '组件树右键菜单',
+    children: [
+      { id: 'newFile', name: '创建新页面', icon: 'file' },
+      { id: 'copy', name: '复制', icon: 'copy', shortcut: '⌘+C' },
+      {
+        id: 'paste',
+        name: '粘贴',
+        icon: 'switcher',
+        shortcut: '⌘+V',
+        disabled: true
+      },
+      {
+        id: 'divider',
+        name: '分割线',
+        icon: 'file',
+        type: 'separator'
+      },
+      { id: 'preview', name: '预览', icon: 'eye' },
+      { id: 'delete', name: '删除', icon: 'delete', shortcut: '⌘+Delete' }
+    ]
+  }
+}).menu;
 
 let plainMenu = menuModel.toJSON();
 
@@ -102,6 +107,9 @@ storiesOf('基础使用', module)
           top: 100,
           onClickItem: onClickItem
         }}
+        comList={{
+          visible: false
+        }}
       />
       <button onClick={clickBtn}>点击更换 name （会响应）</button>
     </div>
@@ -123,6 +131,9 @@ storiesOf('基础使用', module)
           left: 100,
           top: 100,
           onClickItem: onClickItem
+        }}
+        comList={{
+          visible: false
         }}
       />
       <button onClick={clickBtn}>点击更换 name （无效）</button>
