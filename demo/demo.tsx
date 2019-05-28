@@ -28,8 +28,6 @@ import newCompList from './comp-list';
 
 // 新版 json 转换
 const convertedJSON = schemaConverter(schemajson, ESchemaOrigin.GOURD_V2);
-// console.log(777, schemajson, convertedJSON);
-
 const schema = createSchemaModel(convertedJSON);
 
 const onExpand = function(keys) {
@@ -100,7 +98,7 @@ const onOutsideListPanel = (e: MouseEvent, isOutSide: boolean) => {
 // 作用：增删改 shema 的时候，通知外界什么出现了变更
 // 机理：监听 mst 的变更
 const onComponentTreeChange = function(key: string, value: any) {
-  console.log('model changed', key, value);
+  console.log('component model changed', key, value);
 };
 
 render(
@@ -134,11 +132,10 @@ render(
           onSelectNode: onSelectNode,
           onRightClickNode: onRightClickNode,
           onModelChange: function(key: string, value: any) {
-            console.log(
-              'schema tree model changed:',
-              key,
-              value.toJSON ? value.toJSON() : value
-            );
+            if (key === 'schema') {
+              const result = value.schemaJSON ? value.schemaJSON : value;
+              console.log('schema changed', key, result);
+            }
           },
           onExpand
         }}
@@ -159,3 +156,7 @@ client.post('/schemaTree/tree', { schema: schema }); // 注意这里的 schema �
 client.post('/contextMenu/menu', { menu: menu });
 client.put('/comList/model', { name: 'visible', value: false });
 client.put('/comList/model', { name: 'list', value: newCompList });
+
+// client.get('/schemaTree/nodes/$root_div').then(res => {
+//   console.log(111, res, res.body.node.children[0].toJSON());
+// });

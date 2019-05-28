@@ -16,12 +16,16 @@ import { message } from 'antd';
 import { debugInteract } from '../../../lib/debug';
 
 const getSchemaByItem = function(item: IComponentListItem) {
-  const { name } = item;
+  const { name, packageId } = item;
   const schema: Record<string, any> = {
     name: name
   };
 
   schema.props = {};
+  schema.component = {
+    packageId,
+    name
+  };
 
   return schema;
 };

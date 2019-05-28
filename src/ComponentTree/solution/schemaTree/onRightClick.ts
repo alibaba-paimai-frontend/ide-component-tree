@@ -7,7 +7,7 @@ import { IStoresModel } from 'ide-lib-engine';
 
 import { ROUTER_MAP } from '../../router/helper';
 
-const maybeDisableItem = ['createSub', 'createUp', 'createDown', 'delete'];
+const maybeDisableItem = ['createUp', 'createDown', 'delete'];
 
 
 /**

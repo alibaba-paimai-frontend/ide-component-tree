@@ -9,6 +9,7 @@ interface IStyledProps extends IComponentTreeProps, IBaseStyledProps { }
 export const StyledContainer = styled.div.attrs({
   style: (props: IStyledProps) => props.style || {}  // 优先级会高一些，行内样式
 })<IStyledProps>`
+  height: 100%;
 `;
 
 export const StyledListWrap = styled.div.attrs({
