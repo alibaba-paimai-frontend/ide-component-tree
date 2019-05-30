@@ -33,7 +33,6 @@ export interface IComponentTreeEvent {
     isOutSide: boolean,
     detail: { [key: string]: boolean }
   ) => void;
-
 }
 
 // export interface IComponentTreeStyles extends IBaseStyles {
@@ -92,10 +91,16 @@ export const ComponentTreeCurrying: TComponentCurrying<
   } = subComponents as Record<string, React.FunctionComponent<typeof props>>;
 
   const refContainer = useRef(null);
-  const containerArea = useSizeArea(refContainer);
+  // const containerArea = useSizeArea(refContainer);
 
   // 监听 window 大小
   const windowSize = useWindowSize();
+  const containerArea = useMemo(() => {
+    return {
+      point: { x: 0, y: 0 },
+      size: { width: windowSize.innerWidth, height: windowSize.innerHeight }
+    };
+  }, [windowSize]);
 
   // 使用 useMemo 提高性能
   const ComponentListWithClickOutside = useMemo(() => {

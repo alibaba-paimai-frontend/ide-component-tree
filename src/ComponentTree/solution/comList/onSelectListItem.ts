@@ -50,7 +50,6 @@ export const addChildNodeByItem = (env: IStoresEnv<IStoresModel>) => async (
   const clickedMenuKey = contextMenuStore.model.selectedKey; // 获取被点击的右键菜单 key 值
 
   debugInteract('当前选中的组件：', item, clickedMenuKey);
-  client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
 
   // 根据组件名，获取 schema 对象
   const schema = getSchemaByItem(item); // 根据组件名获取组件 schema
@@ -58,31 +57,35 @@ export const addChildNodeByItem = (env: IStoresEnv<IStoresModel>) => async (
 
   const selectedNodeId = schemaTreeStore.model.selectedId;
 
-  // 根据所选菜单项，进行不同位置的插入
-  const insertType = clickedMenuKey === 'createSub' ? 'children' : 'sibling';
-  const reqApi = `${
-    ROUTER_MAP.schemaTree
-  }/nodes/${selectedNodeId}/${insertType}`;
-  const reqData =
-    insertType === 'children'
-      ? { schema }
-      : { schema, offset: clickedMenuKey === 'createUp' ? '0' : '1' };
+  // 如果是 “插入区块”，逻辑由外部去实现
+  if (clickedMenuKey !== 'createBlock') {
+    // 根据所选菜单项，进行不同位置的插入
+    const insertType = clickedMenuKey === 'createSub' ? 'children' : 'sibling';
+    const reqApi = `${
+      ROUTER_MAP.schemaTree
+    }/nodes/${selectedNodeId}/${insertType}`;
+    const reqData =
+      insertType === 'children'
+        ? { schema }
+        : { schema, offset: clickedMenuKey === 'createUp' ? '0' : '1' };
 
-  if (!!selectedNodeId) {
-    client.post(reqApi, reqData).then((res: Response) => {
-      const newId = getValueByPath(res, 'body.data.node.id');
-      // 如果插入的组件带有 children 属性，比如 'Row'、‘FormItem' 组件
-      // 需要同时生成指定的额外 child
-      (item.children || []).forEach((child: any) => {
-        client.post(`${ROUTER_MAP.schemaTree}/nodes/${newId}/children`, {
-          schema: getSchemaByItem(child)
+    if (!!selectedNodeId) {
+      client.post(reqApi, reqData).then((res: Response) => {
+        const newId = getValueByPath(res, 'body.data.node.id');
+        // 如果插入的组件带有 children 属性，比如 'Row'、‘FormItem' 组件
+        // 需要同时生成指定的额外 child
+        (item.children || []).forEach((child: any) => {
+          client.post(`${ROUTER_MAP.schemaTree}/nodes/${newId}/children`, {
+            schema: getSchemaByItem(child)
+          });
         });
       });
-    });
-  } else {
-    message.info('因没有选中任何节点，添加失败');
+    } else {
+      message.info('因没有选中任何节点，添加失败');
+    }
   }
-
+  
   // 隐藏当前 list 列表
+  client.put('/model', { name: 'listVisible', value: false }); // 关闭 list
   client.put(`${ROUTER_MAP.comList}/model`, { name: 'visible', value: false });
 };

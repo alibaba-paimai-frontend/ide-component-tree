@@ -5,7 +5,7 @@ import { getValueByPath } from 'ide-lib-utils';
 
 import { ROUTER_MAP } from '../../router/helper';
 
-const shouldViewList = ['createSub', 'createUp', 'createDown'];
+const shouldViewList = ['createSub', 'createBlock', 'createUp', 'createDown'];
 
 /**
  * 显示 list 列表项
@@ -17,7 +17,7 @@ export const showComponentList = (env: IStoresEnv<IStoresModel>) => async (
   item: any
 ) => {
   const { stores, client } = env;
-  // 根据是否是特殊的菜单项，对菜单进行不同的设置
+  // 根据是否是特殊的菜单项，则让列表展现出来
   if (!!~shouldViewList.indexOf(key)) {
     stores.model.setListModalVisible(true); // 让 list 可见
     client.put(`${ROUTER_MAP.comList}/model`, {

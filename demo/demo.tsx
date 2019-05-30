@@ -11,7 +11,8 @@ import {
   ComponentTreeFactory,
   IComponentTreeProps,
   ESchemaOrigin,
-  schemaConverter
+  schemaConverter,
+  schemaConvertToNew
 } from '../src/';
 const {
   ComponentWithStore: ComponentTreeWithStore,
@@ -21,6 +22,8 @@ const {
 import schemajson from './schema';
 import COMP_LIST from './list.json';
 import newCompList from './comp-list';
+import gourd2BlockList, { blockSchema } from './gourd2-complist';
+// import console = require('console');
 
 /**
  * schema tree 部分
@@ -50,6 +53,12 @@ const menu: IMenuObject = {
   name: '组件树右键菜单',
   children: [
     { id: 'createSub', name: '添加组件', icon: 'plus', shortcut: '⌘+Alt+G' },
+    {
+      id: 'createBlock',
+      name: '添加区块',
+      icon: 'appstore-o',
+      shortcut: '⌘+Alt+B'
+    },
     // { id: 'createTmpl', name: '添加模板', icon: 'plus', shortcut: '' },
     { id: 'createUp', name: '前面插入组件', icon: 'arrow-up', shortcut: '' },
     {
@@ -78,6 +87,10 @@ const menu: IMenuObject = {
 
 function onClickItem(key: string, keyPath: Array<string>, item: any) {
   console.log(`[11]当前点击项的 id: ${key}`);
+
+  const targetList = key === 'createBlock' ? gourd2BlockList : newCompList;
+  // 如果点击是 “创建区块”，则更改 list 源
+  client.put('/comList/model', { name: 'list', value: targetList });
 }
 
 /**
@@ -85,7 +98,27 @@ function onClickItem(key: string, keyPath: Array<string>, item: any) {
  */
 
 const onSelectListItem = item => {
-  console.log('onSelectListItem...');
+  console.log('onSelectListItem...', item);
+
+  // 在某个节点下新增
+  client.get('/contextMenu/selection').then(res => {
+    const keyName = res.body.data.selection;
+    if (keyName === 'createBlock') {
+      // 获取当前选择的 selectId，并转换成 schema 对象
+      const convertedSchema = schemaConvertToNew(blockSchema);
+      // const model = createSchemaModel(convertedSchema);
+
+      // 获取被选中的 id
+      client.get('/schemaTree/selection').then(res => {
+        const id = res.body.data.id;
+        client.post(`/schemaTree/nodes/${id}/children`, {
+          schema: convertedSchema
+        });
+      });
+
+      // console.log(444, model);
+    }
+  });
 };
 
 const onOutsideListPanel = (e: MouseEvent, isOutSide: boolean) => {
@@ -127,25 +160,29 @@ render(
       />
     </Panel>
     <Panel header="包含 store 功能" key="1">
-      <ComponentTreeWithStore
-        schemaTree={{
-          onSelectNode: onSelectNode,
-          onRightClickNode: onRightClickNode,
-          onModelChange: function(key: string, value: any) {
-            if (key === 'schema') {
-              const result = value.schemaJSON ? value.schemaJSON : value;
-              console.log('schema changed', key, result);
-            }
-          },
-          onExpand
-        }}
-        contextMenu={{
-          onClickItem: onClickItem
-        }}
-        onModelChange={onComponentTreeChange}
-        onSelectListItem={onSelectListItem}
-        onOutsideListPanel={onOutsideListPanel}
-      />
+      <div style={{ width: 400 }}>
+        <ComponentTreeWithStore
+          schemaTree={{
+            onSelectNode: onSelectNode,
+            onRightClickNode: onRightClickNode,
+            onModelChange: function(key: string, value: any) {
+              if (key === 'schema') {
+                const result = value.schemaJSON ? value.schemaJSON : value;
+                console.log('schema changed', key, result);
+              }
+            },
+            onExpand
+          }}
+          contextMenu={{
+            onClickItem: onClickItem
+          }}
+          comList={{
+            onSelectItem: onSelectListItem
+          }}
+          onModelChange={onComponentTreeChange}
+          onOutsideListPanel={onOutsideListPanel}
+        />
+      </div>
     </Panel>
   </Collapse>,
   document.getElementById('example') as HTMLElement
@@ -154,8 +191,8 @@ render(
 // 创建组件树和右键菜单
 client.post('/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功
 client.post('/contextMenu/menu', { menu: menu });
-client.put('/comList/model', { name: 'visible', value: false });
-client.put('/comList/model', { name: 'list', value: newCompList });
+client.put('/comList/model', { name: 'visible', value: true });
+client.put('/comList/model', { name: 'list', value: gourd2BlockList });
 
 // client.get('/schemaTree/nodes/$root_div').then(res => {
 //   console.log(111, res, res.body.node.children[0].toJSON());

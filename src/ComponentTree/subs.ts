@@ -79,7 +79,7 @@ export const subComponents: Record<
     solution: {
       onClickItem: [showComponentList, actionByItem, hideMenuWhenListShow]
     },
-    routeScope: ['menu', 'items'] // 能通过父组件访问到的路径
+    routeScope: ['menu', 'items', 'selection'] // 能通过父组件访问到的路径
   },
   comList: {
     className: 'ComponentList',
