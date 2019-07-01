@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.2](https://github.com/one-gourd/ide-component-tree/compare/v0.2.1...v0.2.2) (2019-07-01)
+
+
+### Features
+
+* 🎸 功能新增: 支持右键 “添加区块” 功能 ([bdeaf07](https://github.com/one-gourd/ide-component-tree/commit/bdeaf07))
+
+
+
 ## [0.2.1](https://github.com/one-gourd/ide-component-tree/compare/v0.2.0...v0.2.1) (2019-05-28)
 
 
