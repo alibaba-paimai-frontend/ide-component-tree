@@ -76,9 +76,9 @@
   "dependencies": {
     "@bitjourney/uuid-v4": "^1.0.1",
     "@rehooks/window-size": "^1.0.2",
-    "ide-component-list": "^0.2.0",
-    "ide-context-menu": "^0.2.0",
-    "ide-tree": "^2.0.4"
+    "ide-component-list": "0.2.x",
+    "ide-context-menu": "0.2.x",
+    "ide-tree": "2.0.x"
   },
   "peerDependencies": {
     "ss-tree": "x.x.x",
