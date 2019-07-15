@@ -44,19 +44,18 @@ export const showContextMenu = (env: IStoresEnv<IStoresModel>) => async (
     });
   });
 
+  //   显示 modal 层
+  stores.model.setMenuModalVisible(true);
+
   // 根据事件位置，显示菜单
   client.put(`${ROUTER_MAP.contextMenu}/menu`, {
     name: 'visible',
     value: true
   });
 
-  //   显示 modal 层
-  stores.model.setMenuModalVisible(true);
-
-  //   console.log(event.clientX, event.clientY);
   // 根据事件位置，自动展现右键菜单
   client.put(`${ROUTER_MAP.contextMenu}/menu/position`, {
     x: event.clientX,
-    y: event.clientY
+    y: event.clientY,
   });
 };

@@ -1,5 +1,5 @@
 const path = require('path');
-const { getExternal } = require('./webpack-helper');
+const { getExternal, getAlias } = require('./webpack-helper');
 
 const commontConfig = {
   entry: {
@@ -29,9 +29,12 @@ const commontConfig = {
       }
     ]
   },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js']
-  }
+  resolve: Object.assign(
+    {
+      extensions: ['.tsx', '.ts', '.js']
+    },
+    getAlias()
+  )
 };
 
 const normalConfig = Object.assign({}, commontConfig, {

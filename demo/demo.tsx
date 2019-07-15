@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-import { Collapse } from 'antd';
+import { Collapse, Button } from 'antd';
 const Panel = Collapse.Panel;
 
 import { createSchemaModel } from 'ide-tree';
@@ -32,6 +32,11 @@ import gourd2BlockList, { blockSchema } from './gourd2-complist';
 // 新版 json 转换
 const convertedJSON = schemaConverter(schemajson, ESchemaOrigin.GOURD_V2);
 const schema = createSchemaModel(convertedJSON);
+
+// 为了测试右键菜单的边界，创建长的组件树
+const longSchemaJson = Object.assign({}, schemajson);
+longSchemaJson.children = longSchemaJson.children.concat(Object.assign({}, longSchemaJson) as any).concat(Object.assign({}, longSchemaJson) as any)
+const schemaLong = createSchemaModel(schemaConverter(longSchemaJson, ESchemaOrigin.GOURD_V2));
 
 const onExpand = function(keys) {
   console.log(888, keys);
@@ -134,6 +139,10 @@ const onComponentTreeChange = function(key: string, value: any) {
   console.log('component model changed', key, value);
 };
 
+const changeTree = (schema) => () => {
+  client.post('/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功 
+}
+
 render(
   <Collapse defaultActiveKey={['1']}>
     <Panel header="普通组件" key="0">
@@ -148,19 +157,20 @@ render(
         contextMenu={{
           menu: menu,
           visible: false,
-          width: 200,
+          cWidth: 200,
           left: 100,
           top: 10,
           onClickItem: onClickItem
         }}
         comList={{
-          visible: true,
+          visible: false,
           list: COMP_LIST
         }}
       />
     </Panel>
     <Panel header="包含 store 功能" key="1">
       <div style={{ width: 400 }}>
+        <Button onClick={changeTree(schemaLong)}>使用长组件树</Button>
         <ComponentTreeWithStore
           schemaTree={{
             onSelectNode: onSelectNode,
@@ -174,6 +184,7 @@ render(
             onExpand
           }}
           contextMenu={{
+            cWidth: 200,
             onClickItem: onClickItem
           }}
           comList={{
@@ -189,9 +200,9 @@ render(
 );
 
 // 创建组件树和右键菜单
-client.post('/schemaTree/tree', { schema: schema }); // 注意这里的 schema 需要用 createSchemaModel 转换一层，否则因为缺少 parentId ，导致无法创建成功
+changeTree(schemaLong)(); // 默认使用短树
 client.post('/contextMenu/menu', { menu: menu });
-client.put('/comList/model', { name: 'visible', value: true });
+client.put('/comList/model', { name: 'visible', value: false });
 client.put('/comList/model', { name: 'list', value: gourd2BlockList });
 
 // client.get('/schemaTree/nodes/$root_div').then(res => {
